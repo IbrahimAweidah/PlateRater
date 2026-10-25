@@ -1,0 +1,9 @@
+// PlateRater settings. Fill these in, then build.
+
+// From Google Cloud Console > APIs & Services > Credentials > your iOS OAuth client.
+GOOGLE_CLIENT_ID = YOUR-IOS-CLIENT-ID.apps.googleusercontent.com
+// The same ID reversed (shown as "iOS URL scheme" on the client's page).
+GOOGLE_REVERSED_CLIENT_ID = com.googleusercontent.apps.YOUR-IOS-CLIENT-ID
+
+// Where PlateRaterAPI runs. Must be https. Keep the $() — xcconfig treats // as a comment.
+API_BASE_URL = https:/$()/YOUR-API-ADDRESS/

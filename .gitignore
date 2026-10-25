@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+DerivedData/
+*.xcuserstate
+build/
+
+# .NET
+PlateRaterAPI/bin/
+PlateRaterAPI/obj/
+PlateRaterAPI/publish/
+PlateRaterAPI/appsettings.*.json
+
+# Backups
+_backup-before-backend/
