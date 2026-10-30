@@ -10,14 +10,14 @@ struct SignInView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            Image(systemName: "car.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(.tint)
+            Text("🤪🚗")
+                .font(.system(size: 72))
 
-            Text("Plate Rater")
-                .font(.largeTitle.bold())
+            Text("Galen")
+                .font(Galen.title(56))
+                .foregroundStyle(Galen.pink)
 
-            Text("Sign in to see and leave driver ratings.")
+            Text("Spana in galna förare, jaga bilar i alla färger och samla poäng!")
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
@@ -31,15 +31,16 @@ struct SignInView: View {
                         try await auth.signIn()
                         errorMessage = nil
                     } catch {
-                        errorMessage = "Sign-in failed. Please try again."
+                        errorMessage = "Inloggningen misslyckades. Försök igen."
                     }
                 }
             } label: {
-                Label("Sign in with Google", systemImage: "person.crop.circle")
+                Label("Logga in med Google", systemImage: "person.crop.circle")
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(Galen.pink)
             .controlSize(.large)
             .disabled(isSigningIn)
             .padding(.horizontal, 40)

@@ -1,23 +1,26 @@
 # PlateRater
 
-iOS app (SwiftUI, iOS 17) for rating drivers by Swedish license plate, plus an ASP.NET Core 8 API that stores the ratings.
+**Galen** (repo/project name PlateRater): a funny, kid-friendly Swedish iOS app (SwiftUI, iOS 17) for rating how crazy drivers are by Swedish license plate, plus an ASP.NET Core 8 API that stores the ratings.
 
 ## Layout
 
 - `PlateRater/` – the iOS app. Open `PlateRater.xcodeproj` in Xcode to build and run.
   - `AuthManager.swift` – Google sign-in (GoogleSignIn-iOS 8.x via Swift Package Manager).
   - `APIClient.swift` – calls the API with the Google ID token as a bearer token.
-  - `RatingStore.swift`, `PlateDetailView.swift`, `ContentView.swift`, `SignInView.swift` – UI and state.
+  - `RatingStore.swift`, `PlateDetailView.swift`, `ContentView.swift` (tabs: Spana, Mina betyg, Färgjakt), `MyRatingsView.swift`, `ColorHuntView.swift`, `SignInView.swift` – UI and state.
+  - `Theme.swift` – Galen colors, `GalenLevel` (1 🐌 Snigelfart … 5 🤪 Galen förare), `CarColor` (keys must match `CarColors` in the API), `SpotterRank`.
+  - UI text is Swedish. Bundle ID stays `com.ibrahimaweidah.PlateRater` (Google OAuth client is tied to it); display name is Galen.
   - `Config.xcconfig` – `GOOGLE_CLIENT_ID`, `GOOGLE_REVERSED_CLIENT_ID`, `API_BASE_URL`, fed into `Info.plist`. In xcconfig `//` starts a comment, so URLs are written `https:/$()/host/`.
 - `PlateRaterAPI/` – ASP.NET Core 8 minimal API (`Program.cs`, `AppDb.cs`), EF Core with SQL Server.
   - `schema.sql` – creates `PlateRaterUsers` and `PlateRaterRatings`. Already run on the production database.
+  - `schema-2-galen.sql` – adds `Color` to ratings and the `PlateRaterPhotos` table. Must run before deploying the Galen API.
   - `appsettings.json` – connection string has a `YOUR-DB-PASSWORD` placeholder. Never commit the real password.
 - `SETUP.md` – step-by-step setup guide.
 
 ## How it fits together
 
 - The app signs in with Google and sends the ID token on every request. The API validates it against Google's keys (JwtBearer, authority `https://accounts.google.com`, audience = the iOS client ID in `Google:ClientIds`).
-- Endpoints: `GET /api/plates/{plate}`, `PUT /api/plates/{plate}/rating` (`{score, comment}`), `DELETE /api/plates/{plate}/rating`. One rating per Google account per plate. Other users' names and emails are never returned.
+- Endpoints: `GET /api/plates/{plate}`, `PUT /api/plates/{plate}/rating` (`{score, comment, color}`), `DELETE /api/plates/{plate}/rating`, `PUT|GET|DELETE /api/plates/{plate}/rating/photo` (raw JPEG/PNG body, max 3 MB), `GET /api/me/ratings`. One rating per Google account per plate. Other users' names, emails and photos are never returned.
 
 ## Where things run
 
@@ -27,5 +30,6 @@ iOS app (SwiftUI, iOS 17) for rating drivers by Swedish license plate, plus an A
 
 ## Status
 
-- The API is deployed and responds.
-- The Swift code has not been compiled yet. Next step: build in Xcode and fix any errors, then sign in and rate a plate end to end.
+- The original API is deployed and the first Xcode build succeeded.
+- Galen update (colors, photos, Mina betyg, Färgjakt): not compiled in Xcode yet; needs `schema-2-galen.sql` run, then API re-upload, then an Xcode build.
+- No free API gives Swedish vehicle data (make/model/color) by plate; Transportstyrelsen and the commercial options (biluppgifter.se, car.info, tic.io, minbilkoll.se) need an agreement or a paid plan.

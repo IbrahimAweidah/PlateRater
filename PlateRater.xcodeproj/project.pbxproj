@@ -18,6 +18,10 @@
 		4E0000000000000000000023 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000022 /* AuthManager.swift */; };
 		4E0000000000000000000025 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000024 /* SignInView.swift */; };
 		4E0000000000000000000028 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 4E000000000000000000002A /* GoogleSignIn */; };
+		4E0000000000000000000040 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000041 /* Theme.swift */; };
+		4E0000000000000000000042 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000043 /* CameraPicker.swift */; };
+		4E0000000000000000000044 /* MyRatingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000045 /* MyRatingsView.swift */; };
+		4E0000000000000000000046 /* ColorHuntView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000047 /* ColorHuntView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +38,10 @@
 		4E0000000000000000000024 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		4E0000000000000000000026 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4E0000000000000000000027 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		4E0000000000000000000041 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		4E0000000000000000000043 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
+		4E0000000000000000000045 /* MyRatingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyRatingsView.swift; sourceTree = "<group>"; };
+		4E0000000000000000000047 /* ColorHuntView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorHuntView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +83,10 @@
 				4E0000000000000000000024 /* SignInView.swift */,
 				4E0000000000000000000022 /* AuthManager.swift */,
 				4E0000000000000000000020 /* APIClient.swift */,
+				4E0000000000000000000041 /* Theme.swift */,
+				4E0000000000000000000043 /* CameraPicker.swift */,
+				4E0000000000000000000045 /* MyRatingsView.swift */,
+				4E0000000000000000000047 /* ColorHuntView.swift */,
 				4E0000000000000000000027 /* Config.xcconfig */,
 				4E0000000000000000000026 /* Info.plist */,
 				4E0000000000000000000013 /* Assets.xcassets */,
@@ -175,6 +187,10 @@
 				4E0000000000000000000025 /* SignInView.swift in Sources */,
 				4E0000000000000000000023 /* AuthManager.swift in Sources */,
 				4E0000000000000000000021 /* APIClient.swift in Sources */,
+				4E0000000000000000000040 /* Theme.swift in Sources */,
+				4E0000000000000000000042 /* CameraPicker.swift in Sources */,
+				4E0000000000000000000044 /* MyRatingsView.swift in Sources */,
+				4E0000000000000000000046 /* ColorHuntView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,6 +259,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PlateRater/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Galen;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Galen använder kameran så att du kan fota bilar du betygsätter.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Galen sparar dina bilfoton i Bilder när du ber om det.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -273,6 +292,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PlateRater/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Galen;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Galen använder kameran så att du kan fota bilar du betygsätter.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Galen sparar dina bilfoton i Bilder när du ber om det.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

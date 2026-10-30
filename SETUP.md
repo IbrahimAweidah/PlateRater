@@ -50,3 +50,18 @@ The app now signs in with Google and stores ratings on your server. There are fo
 - Other people's ratings show only a score, a comment, and a date. Names and emails are never sent to the app.
 
 Your original app files are backed up in `_backup-before-backend/`.
+
+## Galen update (colors, photos, "Mina betyg")
+
+The app is now called **Galen**. Ratings have a car color and an optional photo, and there are new tabs for your own ratings and the color hunt. Do these in this order:
+
+1. **Database first.** In Web SQL Manager for `DB_A30625_ibrahimawe`, run `PlateRaterAPI/schema-2-galen.sql`. It adds a `Color` column to `PlateRaterRatings` and a new `PlateRaterPhotos` table. The API that is running now keeps working after this.
+2. **Then the API.** Rebuild and upload:
+   ```
+   cd ~/Developer/PlateRater/PlateRaterAPI
+   dotnet publish -c Release -o publish/upload
+   ```
+   Upload everything in `publish/upload` **except `appsettings.json`**, so the copy on the server with the real password stays as it is. Open the site afterwards; it should say **Galen API is running.**
+3. **Then the app.** Pull, open `PlateRater.xcodeproj`, build and run.
+
+Photos are stored in the database (scaled down to about 200–400 KB each) and only the person who took a photo can see it.
