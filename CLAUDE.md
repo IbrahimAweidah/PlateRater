@@ -1,10 +1,11 @@
-# PlateRater
+# Galen (repo PlateRater)
 
-**Galen** (repo/project name PlateRater): a funny, kid-friendly Swedish iOS app (SwiftUI, iOS 17) for rating how crazy drivers are by Swedish license plate, plus an ASP.NET Core 8 API that stores the ratings.
+**Galen**: a funny, kid-friendly Swedish iOS app (SwiftUI, iOS 17) for rating how crazy drivers are by Swedish license plate, plus an ASP.NET Core 8 API that stores the ratings.
 
 ## Layout
 
-- `PlateRater/` – the iOS app. Open `PlateRater.xcodeproj` in Xcode to build and run.
+- `Galen/` – the iOS app (target and scheme `Galen`, entry point `GalenApp.swift` with a splash screen). Open `Galen.xcodeproj` in Xcode to build and run. The GitHub repo, API and database tables keep the PlateRater name.
+  - `Assets.xcassets` – `AppIcon` and `GalenLogo` (same 1024px image), pink `AccentColor`.
   - `AuthManager.swift` – Google sign-in (GoogleSignIn-iOS 8.x via Swift Package Manager).
   - `APIClient.swift` – calls the API with the Google ID token as a bearer token.
   - `RatingStore.swift`, `PlateDetailView.swift`, `ContentView.swift` (tabs: Spana, Mina betyg, Färgjakt), `MyRatingsView.swift`, `ColorHuntView.swift`, `SignInView.swift` – UI and state.
