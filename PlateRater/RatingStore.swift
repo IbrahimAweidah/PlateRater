@@ -10,6 +10,8 @@ final class RatingStore {
     private(set) var summaries: [String: PlateSummary] = [:]
     private(set) var mine: [MyRating] = []
     private(set) var photos: [String: UIImage] = [:]
+    /// A photo the plate was scanned from, waiting to be attached when the rating is saved.
+    var scannedPhotos: [String: UIImage] = [:]
     private let api: APIClient
 
     init(auth: AuthManager) {

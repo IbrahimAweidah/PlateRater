@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 
 struct ContentView: View {
@@ -30,11 +31,16 @@ struct SpotView: View {
     var store: RatingStore
 
     @State private var plateInput = ""
+    @State private var path: [String] = []
+    @State private var showCamera = false
+    @State private var pickerItem: PhotosPickerItem?
+    @State private var isScanning = false
+    @State private var scanMessage: String?
 
     private var isValidPlate: Bool { PlateNumber.isValid(plateInput) }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 20) {
                 Text("🚗💨")
                     .font(.system(size: 56))
@@ -78,6 +84,31 @@ struct SpotView: View {
                 .padding(.horizontal, 40)
                 .disabled(!isValidPlate)
 
+                HStack {
+                    if CameraPicker.isAvailable {
+                        Button {
+                            showCamera = true
+                        } label: {
+                            Label("Fota skylten", systemImage: "camera.viewfinder")
+                        }
+                    }
+                    PhotosPicker(selection: $pickerItem, matching: .images) {
+                        Label("Från bild", systemImage: "photo")
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(isScanning)
+
+                if isScanning {
+                    ProgressView("Letar efter skylten…")
+                } else if let scanMessage {
+                    Text(scanMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+
                 Text("\(SpotterRank.title(for: store.mine.count)) · \(store.mine.count) bilar spanade")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -88,6 +119,19 @@ struct SpotView: View {
             .navigationTitle("Galen")
             .navigationDestination(for: String.self) { plate in
                 PlateDetailView(plate: plate, store: store)
+            }
+            .fullScreenCover(isPresented: $showCamera) {
+                CameraPicker { image in Task { await scan(image) } }
+                    .ignoresSafeArea()
+            }
+            .onChange(of: pickerItem) { _, item in
+                guard let item else { return }
+                pickerItem = nil
+                Task {
+                    if let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) {
+                        await scan(image)
+                    }
+                }
             }
             .toolbar {
                 Menu {
@@ -100,6 +144,20 @@ struct SpotView: View {
                 }
             }
         }
+    }
+
+    /// Reads the plate from the photo, then opens the rating with the photo already attached.
+    private func scan(_ image: UIImage) async {
+        isScanning = true
+        defer { isScanning = false }
+        guard let plate = await PlateScanner.plate(in: image) else {
+            scanMessage = "Hittade ingen skylt i bilden. 🙈 Gå närmare eller skriv in den själv."
+            return
+        }
+        scanMessage = nil
+        plateInput = plate
+        store.scannedPhotos[plate] = image
+        path.append(plate)
     }
 }
 

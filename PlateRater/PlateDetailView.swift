@@ -248,6 +248,9 @@ struct PlateDetailView: View {
     }
 
     private func load() async {
+        if newPhoto == nil, let scanned = store.scannedPhotos.removeValue(forKey: plate) {
+            newPhoto = scanned
+        }
         do {
             try await store.load(plate)
             errorMessage = nil
