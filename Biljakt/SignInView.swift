@@ -25,26 +25,28 @@ struct SignInView: View {
 
             Spacer()
 
-            SignInWithAppleButton(.signIn) { request in
-                request.requestedScopes = [.fullName, .email]
-            } onCompletion: { result in
-                Task {
-                    isSigningIn = true
-                    defer { isSigningIn = false }
-                    do {
-                        try await auth.signInWithApple(result.get())
-                        errorMessage = nil
-                    } catch let error as ASAuthorizationError where error.code == .canceled {
-                        // The user closed the Apple sheet.
-                    } catch {
-                        errorMessage = "Inloggningen med Apple misslyckades. Försök igen."
+            if AuthManager.appleSignInEnabled {
+                SignInWithAppleButton(.signIn) { request in
+                    request.requestedScopes = [.fullName, .email]
+                } onCompletion: { result in
+                    Task {
+                        isSigningIn = true
+                        defer { isSigningIn = false }
+                        do {
+                            try await auth.signInWithApple(result.get())
+                            errorMessage = nil
+                        } catch let error as ASAuthorizationError where error.code == .canceled {
+                            // The user closed the Apple sheet.
+                        } catch {
+                            errorMessage = "Inloggningen med Apple misslyckades. Försök igen."
+                        }
                     }
                 }
+                .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+                .frame(height: 50)
+                .disabled(isSigningIn)
+                .padding(.horizontal, 40)
             }
-            .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-            .frame(height: 50)
-            .disabled(isSigningIn)
-            .padding(.horizontal, 40)
 
             Button {
                 Task {

@@ -36,7 +36,8 @@ struct APIClient {
         var request = URLRequest(url: baseURL.appending(path: "api/auth/apple"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONSerialization.data(withJSONObject: ["identityToken": identityToken, "name": name ?? NSNull()])
+        let body: [String: Any] = ["identityToken": identityToken, "name": name.map { $0 as Any } ?? NSNull()]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
         let (data, response) = try await URLSession.shared.data(for: request)
         guard (response as? HTTPURLResponse)?.statusCode == 200 else {
             throw APIError.server("Inloggningen med Apple misslyckades. Försök igen.")

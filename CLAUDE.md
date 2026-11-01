@@ -6,7 +6,7 @@
 
 - `Biljakt/` – the iOS app (target and scheme `Biljakt`, entry point `BiljaktApp.swift` with a splash screen). Open `Biljakt.xcodeproj` in Xcode to build and run.
   - `Assets.xcassets` – `AppIcon` and `BiljaktLogo` (same 1024px image), pink `AccentColor`.
-  - `AuthManager.swift` – Google sign-in (GoogleSignIn-iOS 8.x via Swift Package Manager) and Sign in with Apple (`AppleSession` in the Keychain). `Biljakt.entitlements` turns on Sign in with Apple (needs the paid developer team).
+  - `AuthManager.swift` – Google sign-in (GoogleSignIn-iOS 8.x via Swift Package Manager) and Sign in with Apple (`AppleSession` in the Keychain). `Biljakt.entitlements` turns on Sign in with Apple (needs the paid developer team; off for now, see `AuthManager.appleSignInEnabled`).
   - `APIClient.swift` – calls the API with the Google ID token as a bearer token.
   - `RatingStore.swift`, `PlateDetailView.swift`, `ContentView.swift` (tabs: Spana, Mina bilar, Jakt, Tävla), `MyRatingsView.swift`, `ColorHuntView.swift` (Jakt: colors, car kinds and brands), `FriendsView.swift` (friends and leaderboard), `SignInView.swift` – UI and state.
   - `PlateScanner.swift` – reads the plate from a photo on the device (Apple Vision text recognition, no server, free). Used by "Fota skylten" on the Spana tab; the photo is then attached to the rating.
@@ -55,6 +55,8 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 ## Recent changes (newest first)
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
+
+- 2026-11-01 – First Mac build of the Apple sign-in code: simulator build succeeded after a fix in `APIClient.signInWithApple` (String/NSNull dictionary). Device build failed because team 4T5RSJWR7W is a free personal team, which can't use Sign in with Apple. So it is switched off: `AuthManager.appleSignInEnabled = false` hides the button and `CODE_SIGN_ENTITLEMENTS` was removed (`Biljakt.entitlements` is kept). After joining the paid Apple Developer Program: add Sign in with Apple in Signing & Capabilities and set the flag to true. TestFlight also needs the paid program.
 
 - 2026-11-01 – Sign in with Apple (app: `SignInWithAppleButton`, `AuthManager.signInWithApple`, Keychain; API: `/api/auth/apple`, `Tokens.cs`, second JwtBearer scheme `Biljakt`; no database change). `ITSAppUsesNonExemptEncryption = NO` in Info.plist for TestFlight. TestFlight guide (Swedish): https://claude.ai/artifact/BtyrRSvq7ne3Kkow3xy35Y. Swift not compiled yet.
 
