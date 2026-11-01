@@ -6,7 +6,7 @@
 
 - `Biljakt/` – the iOS app (target and scheme `Biljakt`, entry point `BiljaktApp.swift` with a splash screen). Open `Biljakt.xcodeproj` in Xcode to build and run.
   - `Assets.xcassets` – `AppIcon` and `BiljaktLogo` (same 1024px image), pink `AccentColor`.
-  - `AuthManager.swift` – Google sign-in (GoogleSignIn-iOS 8.x via Swift Package Manager).
+  - `AuthManager.swift` – Google sign-in (GoogleSignIn-iOS 8.x via Swift Package Manager) and Sign in with Apple (`AppleSession` in the Keychain). `Biljakt.entitlements` turns on Sign in with Apple (needs the paid developer team).
   - `APIClient.swift` – calls the API with the Google ID token as a bearer token.
   - `RatingStore.swift`, `PlateDetailView.swift`, `ContentView.swift` (tabs: Spana, Mina bilar, Jakt, Tävla), `MyRatingsView.swift`, `ColorHuntView.swift` (Jakt: colors, car kinds and brands), `FriendsView.swift` (friends and leaderboard), `SignInView.swift` – UI and state.
   - `PlateScanner.swift` – reads the plate from a photo on the device (Apple Vision text recognition, no server, free). Used by "Fota skylten" on the Spana tab; the photo is then attached to the rating.
@@ -22,6 +22,7 @@
 
 ## How it fits together
 
+- Sign in with Apple: the app sends Apple's identity token once to `POST /api/auth/apple` (`{identityToken, name}`, no auth), the API checks it against Apple's keys (audience = bundle ID) and returns a Biljakt token (HS256, 180 days, `Tokens.cs`), signed with `Biljakt:TokenKey` if set or else a key derived from the connection string (changing the DB password signs Apple users out). Apple users are stored in `BiljaktUsers.GoogleSubject` as `apple:<sub>`. The API accepts both Google and Biljakt tokens.
 - The app signs in with Google and sends the ID token on every request. The API validates it against Google's keys (JwtBearer, authority `https://accounts.google.com`, audience = the iOS client ID in `Google:ClientIds`).
 - Endpoints: `GET /api/plates/{plate}`, `PUT /api/plates/{plate}/rating` (`{comment, color, kind, brand}`; `score` optional and unused by the app), `DELETE /api/plates/{plate}/rating`, `PUT|GET|DELETE /api/plates/{plate}/rating/photo` (raw JPEG/PNG body, max 3 MB), `GET /api/me/ratings`, `GET|POST /api/friends` (`{email}`), `POST /api/friends/{id}/accept`, `DELETE /api/friends/{id}`, friend checks: `PUT /api/plates/{plate}/rating/checkphoto`, `GET /api/friends/checks/{id}/photo`, `POST /api/friends/checks/{id}` (`{ok}`); `PUT .../rating` also takes `needsCheck`. One rating per Google account per plate. Ratings are private: every endpoint returns only the signed-in user's own ratings, comments and photos, never anyone else's (decided 2026-11-01 after a legal review, to keep personal data about car owners from being shown to others). Friends, added by Google e-mail and accepted by the other side, see only each other's first name and which colors, kinds and brands of car they found. One exception: when the photo doesn't match what was picked (CarGuesser), the find is `pending` (❗) and gives no points until an accepted friend confirms it; that friend sees the first name, the picks and a copy of the photo with the plate pixelated on the phone (`PlateScanner.hidingPlates`), never the plate. The copy (`BiljaktPhotos.CheckData`) is deleted once answered.
 
@@ -49,11 +50,13 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 
 - Done: ratings, comments and photos are private (only the author sees them), because public ratings of a plate are personal data about the car owner and free text can be defamation.
 - Keep it that way: never show one user's plates, ratings, comments or photos to another user, friends included. Only exception: the plate-pixelated check photo for a pending find, shown to accepted friends until answered.
-- Still to do: real brand logos are on for testing (`BrandBadge.useRealLogos`); turn off or get permission before launch. Privacy policy and terms (link in the app), in-app account deletion, Sign in with Apple, 13-year age limit, "never use while driving" warning, data retention, SmarterASP data processing agreement and data location, own DB user separate from Ibrax_1, a real domain with its own certificate. A lawyer should review before launch.
+- Still to do: real brand logos are on for testing (`BrandBadge.useRealLogos`); turn off or get permission before launch. Privacy policy and terms (link in the app), in-app account deletion (Apple requires it for App Store), 13-year age limit, "never use while driving" warning, data retention, SmarterASP data processing agreement and data location, own DB user separate from Ibrax_1, a real domain with its own certificate. A lawyer should review before launch.
 
 ## Recent changes (newest first)
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
+
+- 2026-11-01 – Sign in with Apple (app: `SignInWithAppleButton`, `AuthManager.signInWithApple`, Keychain; API: `/api/auth/apple`, `Tokens.cs`, second JwtBearer scheme `Biljakt`; no database change). `ITSAppUsesNonExemptEncryption = NO` in Info.plist for TestFlight. TestFlight guide (Swedish): https://claude.ai/artifact/BtyrRSvq7ne3Kkow3xy35Y. Swift not compiled yet.
 
 - 2026-11-01 – Real brand logos (user's wish) in `Assets.xcassets/BrandLogos/logo-<key>` (50 PNGs, 256px, from github.com/filippofilip95/car-logos-dataset), shown by `BrandBadge` on a white circle while `BrandBadge.useRealLogos` is true; false falls back to our own initials badges. The logos are trademarks: turn it off before App Store unless the brands allow it (App Review 5.2.1).
 

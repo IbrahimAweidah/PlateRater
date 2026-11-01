@@ -6,6 +6,8 @@
 	<string>$(GOOGLE_CLIENT_ID)</string>
 	<key>BiljaktAPIBaseURL</key>
 	<string>$(API_BASE_URL)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using BiljaktAPI;
 
@@ -8,8 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDb>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("Biljakt") ?? builder.Configuration.GetConnectionString("PlateRater")));
 
-// The iOS app signs in with Google and sends the Google ID token as a bearer token.
-// It is checked against Google's signing keys and must be issued for one of our client IDs.
+// The iOS app signs in with Google or Apple.
+// Google: the app sends the Google ID token as a bearer token. It is checked against Google's signing keys
+// and must be issued for one of our client IDs.
+// Apple: the app sends Apple's identity token once to /api/auth/apple and gets a Biljakt token back
+// (Apple's own token only lasts 10 minutes and the app can't refresh it without asking the user).
+var tokens = new BiljaktTokens(builder.Configuration);
+builder.Services.AddSingleton(tokens);
+builder.Services.AddSingleton<AppleTokens>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
     {
@@ -17,8 +24,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         o.MapInboundClaims = false;
         o.TokenValidationParameters.ValidIssuers = ["https://accounts.google.com", "accounts.google.com"];
         o.TokenValidationParameters.ValidAudiences = builder.Configuration.GetSection("Google:ClientIds").Get<string[]>();
+    })
+    .AddJwtBearer(BiljaktTokens.Scheme, o =>
+    {
+        o.MapInboundClaims = false;
+        o.TokenValidationParameters = tokens.ValidationParameters;
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(o =>
+    o.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme, BiljaktTokens.Scheme)
+        .RequireAuthenticatedUser().Build());
 
 var app = builder.Build();
 
@@ -26,6 +40,27 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/", () => "Biljakt API is running.");
+
+// Sign in with Apple: checks Apple's identity token and returns a Biljakt token that lasts 180 days.
+// Apple only sends the name the first time, so the app passes it along and we keep it.
+app.MapPost("/api/auth/apple", async (AppleSignIn input, AppleTokens apple, BiljaktTokens tokens, AppDb db) =>
+{
+    var claims = await apple.Validate(input.IdentityToken ?? "");
+    if (claims == null) return Results.Unauthorized();
+    var subject = "apple:" + claims.FindFirstValue("sub");
+    var user = await db.Users.SingleOrDefaultAsync(u => u.GoogleSubject == subject);
+    if (user == null)
+    {
+        user = new User { GoogleSubject = subject, CreatedAt = DateTime.UtcNow };
+        db.Users.Add(user);
+    }
+    var email = claims.FindFirstValue("email");
+    if (!string.IsNullOrWhiteSpace(email)) user.Email = email;
+    var name = input.Name?.Trim();
+    if (!string.IsNullOrWhiteSpace(name)) user.Name = name.Length > 200 ? name[..200] : name;
+    await db.SaveChangesAsync();
+    return Results.Ok(new AppleSessionDto(tokens.Issue(subject, user.Email, user.Name), user.Email, user.Name));
+});
 
 var api = app.MapGroup("/api").RequireAuthorization();
 
@@ -305,7 +340,8 @@ api.MapDelete("/friends/{id:int}", async (int id, ClaimsPrincipal principal, App
 
 app.Run();
 
-// Finds the signed-in Google account in the database, adding it on first use.
+// Finds the signed-in account in the database, adding it on first use.
+// Google accounts are stored by their Google subject, Apple accounts as "apple:" + Apple's subject.
 static async Task<User> CurrentUser(ClaimsPrincipal principal, AppDb db)
 {
     var subject = principal.FindFirstValue("sub")!;
@@ -315,8 +351,10 @@ static async Task<User> CurrentUser(ClaimsPrincipal principal, AppDb db)
         user = new User { GoogleSubject = subject, CreatedAt = DateTime.UtcNow };
         db.Users.Add(user);
     }
-    user.Email = principal.FindFirstValue("email");
-    user.Name = principal.FindFirstValue("name");
+    var email = principal.FindFirstValue("email");
+    if (!string.IsNullOrWhiteSpace(email)) user.Email = email;
+    var name = principal.FindFirstValue("name");
+    if (!string.IsNullOrWhiteSpace(name)) user.Name = name;
     await db.SaveChangesAsync();
     return user;
 }
@@ -350,6 +388,8 @@ static DateTime Utc(DateTime value) => new(value.Ticks - value.Ticks % TimeSpan.
 
 record RatingInput(int? Score, string? Comment, string? Color, string? Kind, string? Brand, bool? NeedsCheck);
 record CheckInput(bool Ok);
+record AppleSignIn(string? IdentityToken, string? Name);
+record AppleSessionDto(string Token, string? Email, string? Name);
 record FriendCheckDto(int Id, string FriendName, string? Color, string? Kind, string? Brand, bool HasPhoto);
 record FriendInput(string? Email);
 record PlayerDto(int? FriendshipId, string Name, bool IsMe, int Cars, List<string> Colors, List<string> Kinds, List<string> Brands);

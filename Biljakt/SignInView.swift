@@ -1,3 +1,4 @@
+import AuthenticationServices
 import SwiftUI
 
 struct SignInView: View {
@@ -5,6 +6,7 @@ struct SignInView: View {
 
     @State private var errorMessage: String?
     @State private var isSigningIn = false
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         VStack(spacing: 24) {
@@ -22,6 +24,27 @@ struct SignInView: View {
                 .multilineTextAlignment(.center)
 
             Spacer()
+
+            SignInWithAppleButton(.signIn) { request in
+                request.requestedScopes = [.fullName, .email]
+            } onCompletion: { result in
+                Task {
+                    isSigningIn = true
+                    defer { isSigningIn = false }
+                    do {
+                        try await auth.signInWithApple(result.get())
+                        errorMessage = nil
+                    } catch let error as ASAuthorizationError where error.code == .canceled {
+                        // The user closed the Apple sheet.
+                    } catch {
+                        errorMessage = "Inloggningen med Apple misslyckades. Försök igen."
+                    }
+                }
+            }
+            .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+            .frame(height: 50)
+            .disabled(isSigningIn)
+            .padding(.horizontal, 40)
 
             Button {
                 Task {
@@ -42,6 +65,7 @@ struct SignInView: View {
             .buttonStyle(.borderedProminent)
             .tint(AppStyle.pink)
             .controlSize(.large)
+            .frame(height: 50)
             .disabled(isSigningIn)
             .padding(.horizontal, 40)
 

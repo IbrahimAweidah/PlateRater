@@ -18,9 +18,30 @@ enum APIError: LocalizedError {
 struct APIClient {
     let auth: AuthManager
 
-    private var baseURL: URL {
+    private var baseURL: URL { Self.baseURL }
+
+    private static var baseURL: URL {
         let value = Bundle.main.object(forInfoDictionaryKey: "BiljaktAPIBaseURL") as? String ?? ""
         return URL(string: value)!
+    }
+
+    struct AppleReply: Decodable {
+        let token: String
+        let email: String?
+        let name: String?
+    }
+
+    /// Swaps Apple's identity token for a Biljakt token. Called before you are signed in, so no bearer token.
+    static func signInWithApple(identityToken: String, name: String?) async throws -> AppleReply {
+        var request = URLRequest(url: baseURL.appending(path: "api/auth/apple"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["identityToken": identityToken, "name": name ?? NSNull()])
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+            throw APIError.server("Inloggningen med Apple misslyckades. Försök igen.")
+        }
+        return try JSONDecoder().decode(AppleReply.self, from: data)
     }
 
     func plate(_ plate: String) async throws -> PlateSummary {
