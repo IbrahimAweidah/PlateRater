@@ -27,8 +27,9 @@ struct APIClient {
         try await decode(send("GET", "api/plates/\(plate)"))
     }
 
-    func saveRating(comment: String, color: CarColor?, kind: CarKind?, brand: CarBrand?, for plate: String) async throws -> Rating {
+    func saveRating(comment: String, color: CarColor?, kind: CarKind?, brand: CarBrand?, needsCheck: Bool?, for plate: String) async throws -> Rating {
         let body: [String: Any] = [
+            "needsCheck": needsCheck.map { $0 as Any } ?? NSNull(),
             "comment": comment,
             "color": color.map { $0.rawValue as Any } ?? NSNull(),
             "kind": kind.map { $0.rawValue as Any } ?? NSNull(),
@@ -39,6 +40,23 @@ struct APIClient {
 
     func myRatings() async throws -> MyRatings {
         try await decode(send("GET", "api/me/ratings"))
+    }
+
+    /// A copy of your photo with the plate pixelated, for the friend who checks the find.
+    func uploadCheckPhoto(_ jpeg: Data, for plate: String) async throws {
+        _ = try await send("PUT", "api/plates/\(plate)/rating/checkphoto", body: jpeg, contentType: "image/jpeg")
+    }
+
+    func checkPhoto(_ id: Int) async throws -> Data? {
+        do {
+            return try await send("GET", "api/friends/checks/\(id)/photo")
+        } catch APIError.notFound {
+            return nil
+        }
+    }
+
+    func answerCheck(_ id: Int, ok: Bool) async throws {
+        _ = try await send("POST", "api/friends/checks/\(id)", json: ["ok": ok])
     }
 
     func friends() async throws -> Friends {

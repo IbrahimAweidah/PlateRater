@@ -19,6 +19,8 @@ CREATE TABLE dbo.BiljaktRatings (
     Color     NVARCHAR(20) NULL,
     Kind      NVARCHAR(20) NULL,
     Brand     NVARCHAR(30) NULL,
+    CheckStatus     NVARCHAR(10) NULL,
+    CheckedByUserId INT NULL,
     CreatedAt DATETIME2 NOT NULL,
     UpdatedAt DATETIME2 NOT NULL,
     CONSTRAINT UQ_BiljaktRatings_Plate_User UNIQUE (Plate, UserId)
@@ -29,6 +31,7 @@ CREATE TABLE dbo.BiljaktPhotos (
                 CONSTRAINT FK_BiljaktPhotos_Rating REFERENCES dbo.BiljaktRatings(Id) ON DELETE CASCADE,
     Data        VARBINARY(MAX) NOT NULL,
     ContentType NVARCHAR(50) NOT NULL,
+    CheckData   VARBINARY(MAX) NULL,
     CreatedAt   DATETIME2 NOT NULL
 );
 

@@ -9,6 +9,28 @@ struct Rating: Identifiable, Decodable, Equatable {
     let brand: String?
     let hasPhoto: Bool
     let updatedAt: Date
+    let checkStatus: CheckStatus?
+}
+
+/// When the photo doesn't match what you picked, a friend has to check the find before it gives points.
+enum CheckStatus: String, Decodable {
+    case pending, confirmed, rejected
+
+    var label: String {
+        switch self {
+        case .pending: "❗ Väntar på att en kompis kontrollerar"
+        case .confirmed: "✅ Kontrollerad av en kompis"
+        case .rejected: "❌ En kompis tyckte inte att det stämde"
+        }
+    }
+
+    var mark: String {
+        switch self {
+        case .pending: "❗"
+        case .confirmed: "✅"
+        case .rejected: "❌"
+        }
+    }
 }
 
 /// What the API returns for a plate. Ratings are private, so this only ever holds your own rating.
@@ -27,8 +49,11 @@ struct MyRating: Identifiable, Decodable, Equatable {
     let brand: String?
     let hasPhoto: Bool
     let updatedAt: Date
+    let checkStatus: CheckStatus?
 
     var id: String { plate }
+    /// Whether this find gives points now (not waiting for, or rejected by, a friend's check).
+    var counts: Bool { checkStatus == nil || checkStatus == .confirmed }
 }
 
 struct MyRatings: Decodable {
@@ -59,10 +84,21 @@ struct FriendRequest: Identifiable, Decodable, Equatable {
     let email: String?
 }
 
+/// A friend's find that you are asked to check. Never includes the plate; the photo has the plate pixelated.
+struct FriendCheck: Identifiable, Decodable, Equatable {
+    let id: Int
+    let friendName: String
+    let color: String?
+    let kind: String?
+    let brand: String?
+    let hasPhoto: Bool
+}
+
 struct Friends: Decodable {
     let players: [Player]
     let incoming: [FriendRequest]
     let outgoing: [FriendRequest]
+    let checks: [FriendCheck]
 }
 
 enum PlateNumber {

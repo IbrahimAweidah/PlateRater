@@ -9,6 +9,8 @@ struct PlateDetailView: View {
     @State private var carKind: CarKind?
     @State private var carBrand: CarBrand?
     @State private var guessText: String?
+    /// What the photo looks like, from CarGuesser. Nil when no photo was added in this visit.
+    @State private var guess: CarGuesser.Guess?
     @State private var comment = ""
     @State private var newPhoto: UIImage?
     @State private var savedPhoto: UIImage?
@@ -72,6 +74,12 @@ struct PlateDetailView: View {
                     Text("Du hittade den här bilen \(mine.updatedAt.formatted(date: .abbreviated, time: .omitted))")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                    if let status = mine.checkStatus {
+                        Text(status.label)
+                            .font(.subheadline.bold())
+                            .foregroundStyle(status == .pending ? Color.orange : status == .confirmed ? Color.green : Color.red)
+                            .multilineTextAlignment(.center)
+                    }
                 } else if summary == nil && errorMessage == nil {
                     ProgressView()
                 } else if summary != nil {
@@ -146,24 +154,18 @@ struct PlateDetailView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Vilket märke?")
                     .font(.subheadline.weight(.semibold))
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 8) {
-                    ForEach(CarBrand.allCases) { option in
-                        Button {
-                            carBrand = carBrand == option ? nil : option
-                        } label: {
-                            Text(option.name)
-                                .font(.caption.weight(option == carBrand ? .heavy : .regular))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 6)
-                                .background(option == carBrand ? AppStyle.blue : Color.secondary.opacity(0.12), in: Capsule())
-                                .foregroundStyle(option == carBrand ? Color.white : Color.primary)
+                NavigationLink {
+                    BrandPicker(selection: $carBrand)
+                } label: {
+                    HStack {
+                        if let carBrand {
+                            BrandBadge(brand: carBrand, size: 32)
+                            Text(carBrand.name).font(.headline)
+                        } else {
+                            Text("Välj märke").foregroundStyle(.secondary)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
-                .animation(.spring(duration: 0.3), value: carBrand)
                 if let guessText {
                     Text(guessText)
                         .font(.caption)
@@ -183,7 +185,23 @@ struct PlateDetailView: View {
             .buttonStyle(.borderedProminent)
             .tint(AppStyle.pink)
             .disabled(isSaving)
+
+            if !mismatches.isEmpty {
+                Text("❗ Bilden ser inte ut att stämma med det du valt (\(mismatches.joined(separator: ", "))). En kompis får kontrollera bilden innan bilen ger poäng.")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            }
         }
+    }
+
+    /// What you picked that the photo disagrees with. Plain "car" from the classifier is too vague to count.
+    private var mismatches: [String] {
+        guard let guess else { return [] }
+        var out: [String] = []
+        if let seen = guess.color, let picked = carColor, seen != picked { out.append("färg") }
+        if let seen = guess.brand, let picked = carBrand, seen != picked { out.append("märke") }
+        if let seen = guess.kind, seen != .car, let picked = carKind, seen != picked { out.append("sort") }
+        return out
     }
 
     private var photoSection: some View {
@@ -260,7 +278,10 @@ struct PlateDetailView: View {
         let kindsBefore = Set(store.mine.compactMap { CarKind(key: $0.kind) })
         let brandsBefore = Set(store.mine.compactMap { CarBrand(key: $0.brand) })
         do {
-            try await store.saveRating(comment: comment, color: carColor, kind: carKind, brand: carBrand, photo: newPhoto, for: plate)
+            // Only compare when the photo was looked at in this visit; otherwise keep the earlier check.
+            let needsCheck: Bool? = guess == nil ? nil : !mismatches.isEmpty
+            try await store.saveRating(comment: comment, color: carColor, kind: carKind, brand: carBrand, needsCheck: needsCheck,
+                                       photo: newPhoto, checkPhoto: photo, for: plate)
             errorMessage = nil
             if newPhoto != nil {
                 savedPhoto = newPhoto
@@ -284,6 +305,7 @@ struct PlateDetailView: View {
     /// and says so if the photo doesn't match what you picked.
     private func guessCar(from image: UIImage) async {
         let guess = await CarGuesser.guess(from: image)
+        self.guess = guess
         var guessed: [String] = []
         var notes: [String] = []
         if let color = guess.color {
@@ -333,6 +355,52 @@ struct PlateDetailView: View {
             try? await Task.sleep(for: .seconds(1.8))
             if celebration == text { celebration = nil }
         }
+    }
+}
+
+/// Pick a brand from a searchable list, with a badge for each.
+struct BrandPicker: View {
+    @Binding var selection: CarBrand?
+    @Environment(\.dismiss) private var dismiss
+    @State private var search = ""
+
+    private var brands: [CarBrand] {
+        let query = search.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return CarBrand.byName }
+        return CarBrand.byName.filter { $0.name.localizedCaseInsensitiveContains(query) }
+    }
+
+    var body: some View {
+        List {
+            if search.isEmpty {
+                Button {
+                    selection = nil
+                    dismiss()
+                } label: {
+                    HStack {
+                        Text("Vet inte / inget märke").foregroundStyle(.primary)
+                        Spacer()
+                        if selection == nil { Image(systemName: "checkmark").foregroundStyle(AppStyle.pink) }
+                    }
+                }
+            }
+            ForEach(brands) { brand in
+                Button {
+                    selection = brand
+                    dismiss()
+                } label: {
+                    HStack(spacing: 12) {
+                        BrandBadge(brand: brand, size: 36)
+                        Text(brand.name).foregroundStyle(.primary)
+                        Spacer()
+                        Text("\(brand.points) p").font(.caption).foregroundStyle(.secondary)
+                        if selection == brand { Image(systemName: "checkmark").foregroundStyle(AppStyle.pink) }
+                    }
+                }
+            }
+        }
+        .searchable(text: $search, prompt: "Sök märke")
+        .navigationTitle("Vilket märke?")
     }
 }
 

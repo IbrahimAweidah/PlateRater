@@ -18,6 +18,7 @@ struct FriendsView: View {
     var body: some View {
         NavigationStack {
             List {
+                checks
                 leaderboard
                 requests
                 addFriend
@@ -53,6 +54,25 @@ struct FriendsView: View {
             Text("Topplista")
         } footer: {
             Text("Poäng för varje färg, biltyp och märke du har hittat. Kompisar ser bara ditt förnamn och vilka färger, biltyper och märken du hittat, aldrig skyltar eller anteckningar.")
+        }
+    }
+
+    /// Friends' finds where the photo didn't match what they picked. You decide if it is right.
+    @ViewBuilder
+    private var checks: some View {
+        let checks = store.friends?.checks ?? []
+        if !checks.isEmpty {
+            Section {
+                ForEach(checks) { check in
+                    CheckRow(check: check, store: store, isBusy: isBusy) { ok in
+                        Task { await run { try await store.answerCheck(check.id, ok: ok) } }
+                    }
+                }
+            } header: {
+                Text("❗ Kontrollera kompisarnas fynd")
+            } footer: {
+                Text("Biljakt tyckte att bilden inte stämde med det kompisen valde. Titta på bilden och säg om det stämmer. Skylten är suddad.")
+            }
         }
     }
 
@@ -156,6 +176,59 @@ struct FriendsView: View {
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+}
+
+private struct CheckRow: View {
+    let check: FriendCheck
+    var store: RatingStore
+    let isBusy: Bool
+    let answer: (Bool) -> Void
+
+    @State private var photo: UIImage?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("\(check.friendName) säger att bilen är:")
+                .font(.headline)
+            HStack(spacing: 8) {
+                if let color = CarColor(key: check.color) {
+                    Label { Text(color.name) } icon: { ColorDot(color: color, size: 18) }
+                }
+                if let kind = CarKind(key: check.kind) {
+                    Text("\(kind.emoji) \(kind.name)")
+                }
+                if let brand = CarBrand(key: check.brand) {
+                    Label { Text(brand.name) } icon: { BrandBadge(brand: brand, size: 22) }
+                }
+            }
+            .font(.subheadline)
+            if let photo {
+                Image(uiImage: photo)
+                    .resizable()
+                    .scaledToFit()
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else if check.hasPhoto {
+                ProgressView().frame(maxWidth: .infinity)
+            }
+            HStack {
+                Button { answer(true) } label: {
+                    Text("✅ Stämmer").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.green)
+                Button { answer(false) } label: {
+                    Text("❌ Stämmer inte").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.red)
+            }
+            .disabled(isBusy)
+        }
+        .padding(.vertical, 4)
+        .task(id: check.id) {
+            if check.hasPhoto { photo = await store.checkPhoto(check.id) }
         }
     }
 }

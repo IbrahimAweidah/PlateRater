@@ -32,12 +32,20 @@ final class RatingStore {
         mine = try await api.myRatings().ratings
     }
 
-    func saveRating(comment: String, color: CarColor?, kind: CarKind?, brand: CarBrand?, photo: UIImage?, for plate: String) async throws {
+    /// Saves a find. `needsCheck` is true when the photo doesn't match what was picked, false when it does,
+    /// and nil when there was no photo to compare (the server then keeps the earlier check state).
+    /// `checkPhoto` is the photo a friend gets to see, with the plate pixelated before it leaves the phone.
+    func saveRating(comment: String, color: CarColor?, kind: CarKind?, brand: CarBrand?, needsCheck: Bool?,
+                    photo: UIImage?, checkPhoto: UIImage?, for plate: String) async throws {
         let key = PlateNumber.normalize(plate)
-        _ = try await api.saveRating(comment: comment, color: color, kind: kind, brand: brand, for: key)
+        _ = try await api.saveRating(comment: comment, color: color, kind: kind, brand: brand, needsCheck: needsCheck, for: key)
         if let photo, let jpeg = Self.jpeg(photo) {
             try await api.uploadPhoto(jpeg, for: key)
             photos[key] = photo
+        }
+        if needsCheck == true, let checkPhoto, let hidden = await PlateScanner.hidingPlates(in: checkPhoto),
+           let jpeg = Self.jpeg(hidden) {
+            try? await api.uploadCheckPhoto(jpeg, for: key)
         }
         try await load(key)
         try? await loadMine()
@@ -45,6 +53,17 @@ final class RatingStore {
 
     func loadFriends() async throws {
         friends = try await api.friends()
+    }
+
+    /// The photo of a friend's find you are asked to check (plate pixelated).
+    func checkPhoto(_ id: Int) async -> UIImage? {
+        guard let data = try? await api.checkPhoto(id) else { return nil }
+        return UIImage(data: data)
+    }
+
+    func answerCheck(_ id: Int, ok: Bool) async throws {
+        try await api.answerCheck(id, ok: ok)
+        try await loadFriends()
     }
 
     func addFriend(email: String) async throws {

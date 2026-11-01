@@ -22,6 +22,10 @@ public class Rating
     public string? Color { get; set; }
     public string? Kind { get; set; }
     public string? Brand { get; set; }
+    // Set when the photo didn't match what was picked: "pending" until a friend answers,
+    // then "confirmed" or "rejected". Null means no check is needed. Only null and "confirmed" give points.
+    public string? CheckStatus { get; set; }
+    public int? CheckedByUserId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
@@ -33,6 +37,8 @@ public class Photo
     public int RatingId { get; set; }
     public byte[] Data { get; set; } = [];
     public string ContentType { get; set; } = "image/jpeg";
+    // A copy with the plate pixelated on the phone, shown only to accepted friends while the check is pending.
+    public byte[]? CheckData { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

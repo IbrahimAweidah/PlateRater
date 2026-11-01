@@ -27,7 +27,7 @@ struct ContentView: View {
     }
 }
 
-/// Type a plate and go rate it.
+/// Photograph the whole car (the app reads the plate, color, kind and brand), or type the plate.
 struct SpotView: View {
     var auth: AuthManager
     var store: RatingStore
@@ -38,6 +38,8 @@ struct SpotView: View {
     @State private var pickerItem: PhotosPickerItem?
     @State private var isScanning = false
     @State private var scanMessage: String?
+    /// A photo where no plate was found; it goes with the plate the user types next.
+    @State private var pendingPhoto: UIImage?
 
     private var isValidPlate: Bool { PlateNumber.isValid(plateInput) }
 
@@ -46,7 +48,7 @@ struct SpotView: View {
             VStack(spacing: 20) {
                 Text("🚗💨")
                     .font(.system(size: 56))
-                Text("Såg du en bil? Skriv in registreringsnumret!")
+                Text("Såg du en bil? Fota hela bilen, eller skriv in registreringsnumret!")
                     .font(.headline)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
@@ -76,8 +78,10 @@ struct SpotView: View {
                         .foregroundStyle(.red)
                 }
 
-                NavigationLink(value: PlateNumber.normalize(plateInput)) {
-                    Text("Kör! 🏁")
+                Button {
+                    openFind(PlateNumber.normalize(plateInput))
+                } label: {
+                    Text(pendingPhoto == nil ? "Kör! 🏁" : "Kör med bilden! 🏁")
                         .font(AppStyle.title(20))
                         .frame(maxWidth: .infinity)
                 }
@@ -91,7 +95,7 @@ struct SpotView: View {
                         Button {
                             showCamera = true
                         } label: {
-                            Label("Fota skylten", systemImage: "camera.viewfinder")
+                            Label("Fota bilen", systemImage: "camera.fill")
                         }
                     }
                     PhotosPicker(selection: $pickerItem, matching: .images) {
@@ -102,7 +106,7 @@ struct SpotView: View {
                 .disabled(isScanning)
 
                 if isScanning {
-                    ProgressView("Letar efter skylten…")
+                    ProgressView("Tittar på bilen…")
                 } else if let scanMessage {
                     Text(scanMessage)
                         .font(.caption)
@@ -149,17 +153,27 @@ struct SpotView: View {
         }
     }
 
-    /// Reads the plate from the photo, then opens the rating with the photo already attached.
+    /// Reads the plate from the photo of the car, then opens the find with the photo attached,
+    /// where color, kind and brand are guessed. Without a plate, the photo waits for a typed plate.
     private func scan(_ image: UIImage) async {
         isScanning = true
         defer { isScanning = false }
         guard let plate = await PlateScanner.plate(in: image) else {
-            scanMessage = "Hittade ingen skylt i bilden. 🙈 Gå närmare eller skriv in den själv."
+            pendingPhoto = image
+            scanMessage = "Hittade ingen skylt i bilden. 🙈 Skriv in registreringsnumret så följer bilden med."
             return
         }
-        scanMessage = nil
         plateInput = plate
-        store.scannedPhotos[plate] = image
+        pendingPhoto = image
+        openFind(plate)
+    }
+
+    private func openFind(_ plate: String) {
+        if let pendingPhoto {
+            store.scannedPhotos[plate] = pendingPhoto
+            self.pendingPhoto = nil
+        }
+        scanMessage = nil
         path.append(plate)
     }
 }

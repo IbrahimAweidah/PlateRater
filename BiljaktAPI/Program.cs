@@ -74,7 +74,21 @@ api.MapPut("/plates/{plate}/rating", async (string plate, RatingInput input, Cla
     rating.Kind = kind;
     rating.Brand = brand;
     rating.UpdatedAt = now;
+    // true: the photo doesn't match, a friend must check. false: it matches. null: no photo to compare, keep as is.
+    if (input.NeedsCheck == true)
+    {
+        rating.CheckStatus = Checks.Pending;
+        rating.CheckedByUserId = null;
+    }
+    else if (input.NeedsCheck == false)
+    {
+        rating.CheckStatus = null;
+        rating.CheckedByUserId = null;
+    }
     await db.SaveChangesAsync();
+    if (rating.CheckStatus != Checks.Pending)
+        await db.Photos.Where(p => p.RatingId == rating.Id && p.CheckData != null)
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.CheckData, (byte[]?)null));
 
     return Results.Ok(ToDto(rating, await db.Photos.AnyAsync(p => p.RatingId == rating.Id)));
 });
@@ -117,6 +131,28 @@ api.MapPut("/plates/{plate}/rating/photo", async (string plate, HttpRequest requ
     return Results.NoContent();
 });
 
+// The copy of your photo that a friend sees when checking the find. The app pixelates the plate before upload.
+api.MapPut("/plates/{plate}/rating/checkphoto", async (string plate, HttpRequest request, ClaimsPrincipal principal, AppDb db) =>
+{
+    if (request.ContentType is not ("image/jpeg" or "image/png"))
+        return Results.BadRequest(new { error = "Bilden måste vara JPEG eller PNG." });
+    if (request.ContentLength is > Photo.MaxBytes)
+        return Results.BadRequest(new { error = "Bilden är för stor." });
+
+    var rating = await MyRating(plate, principal, db);
+    if (rating == null || rating.CheckStatus != Checks.Pending) return Results.NotFound();
+    var photo = await db.Photos.FindAsync(rating.Id);
+    if (photo == null) return Results.NotFound(new { error = "Lägg till en bild först." });
+
+    using var buffer = new MemoryStream();
+    await request.Body.CopyToAsync(buffer);
+    if (buffer.Length == 0 || buffer.Length > Photo.MaxBytes)
+        return Results.BadRequest(new { error = "Bilden är tom eller för stor." });
+    photo.CheckData = buffer.ToArray();
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
 api.MapGet("/plates/{plate}/rating/photo", async (string plate, ClaimsPrincipal principal, AppDb db) =>
 {
     var rating = await MyRating(plate, principal, db);
@@ -142,7 +178,7 @@ api.MapGet("/me/ratings", async (ClaimsPrincipal principal, AppDb db) =>
         .ToListAsync();
 
     var ratings = rows.Select(x => new MyRatingDto(
-        x.Rating.Plate, x.Rating.Score, x.Rating.Comment, x.Rating.Color, x.Rating.Kind, x.Rating.Brand, x.HasPhoto, Utc(x.Rating.UpdatedAt))).ToList();
+        x.Rating.Plate, x.Rating.Score, x.Rating.Comment, x.Rating.Color, x.Rating.Kind, x.Rating.Brand, x.HasPhoto, Utc(x.Rating.UpdatedAt), x.Rating.CheckStatus)).ToList();
     return Results.Ok(new MyRatingsDto(ratings.Count, ratings));
 });
 
@@ -162,8 +198,9 @@ api.MapGet("/friends", async (ClaimsPrincipal principal, AppDb db) =>
         .Select(f => (Link: f, Friend: f.FromUserId == me.Id ? f.ToUser : f.FromUser))
         .ToList();
     var playerIds = friends.Select(x => x.Friend.Id).Append(me.Id).ToList();
+    // Finds waiting for a check, or rejected by a friend, don't count.
     var found = await db.Ratings
-        .Where(r => playerIds.Contains(r.UserId))
+        .Where(r => playerIds.Contains(r.UserId) && (r.CheckStatus == null || r.CheckStatus == Checks.Confirmed))
         .Select(r => new { r.UserId, r.Color, r.Kind, r.Brand })
         .ToListAsync();
 
@@ -181,7 +218,40 @@ api.MapGet("/friends", async (ClaimsPrincipal principal, AppDb db) =>
         .Select(f => new FriendRequestDto(f.Id, FirstName(f.FromUser), f.FromUser.Email)).ToList();
     var outgoing = links.Where(f => !f.Accepted && f.FromUserId == me.Id)
         .Select(f => new FriendRequestDto(f.Id, FirstName(f.ToUser), f.ToUser.Email)).ToList();
-    return Results.Ok(new FriendsDto(players, incoming, outgoing));
+    // Friends' finds to check. Never the plate: only first name, what they picked and whether there is a photo.
+    var friendIds = friends.Select(x => x.Friend.Id).ToList();
+    var checks = await db.Ratings
+        .Where(r => friendIds.Contains(r.UserId) && r.CheckStatus == Checks.Pending)
+        .OrderBy(r => r.UpdatedAt)
+        .Take(20)
+        .Select(r => new { r.Id, r.UserId, r.Color, r.Kind, r.Brand, HasPhoto = db.Photos.Any(p => p.RatingId == r.Id && p.CheckData != null) })
+        .ToListAsync();
+    var checkDtos = checks.Select(c => new FriendCheckDto(c.Id,
+        FirstName(friends.First(x => x.Friend.Id == c.UserId).Friend), c.Color, c.Kind, c.Brand, c.HasPhoto)).ToList();
+    return Results.Ok(new FriendsDto(players, incoming, outgoing, checkDtos));
+});
+
+// The pixelated photo of a friend's find that waits for a check.
+api.MapGet("/friends/checks/{id:int}/photo", async (int id, ClaimsPrincipal principal, AppDb db) =>
+{
+    var me = await CurrentUser(principal, db);
+    var rating = await CheckableRating(id, me, db);
+    var data = rating == null ? null : await db.Photos.Where(p => p.RatingId == rating.Id).Select(p => p.CheckData).SingleOrDefaultAsync();
+    return data == null ? Results.NotFound() : Results.File(data, "image/jpeg");
+});
+
+// A friend says whether the find is right. The pixelated copy is deleted once answered.
+api.MapPost("/friends/checks/{id:int}", async (int id, CheckInput input, ClaimsPrincipal principal, AppDb db) =>
+{
+    var me = await CurrentUser(principal, db);
+    var rating = await CheckableRating(id, me, db);
+    if (rating == null) return Results.NotFound();
+    rating.CheckStatus = input.Ok ? Checks.Confirmed : Checks.Rejected;
+    rating.CheckedByUserId = me.Id;
+    await db.SaveChangesAsync();
+    await db.Photos.Where(p => p.RatingId == rating.Id)
+        .ExecuteUpdateAsync(s => s.SetProperty(p => p.CheckData, (byte[]?)null));
+    return Results.NoContent();
 });
 
 // Sends a friend request. If that person already asked you, this accepts their request instead.
@@ -263,18 +333,30 @@ static async Task<Rating?> MyRating(string plate, ClaimsPrincipal principal, App
 }
 
 static RatingDto ToDto(Rating r, bool hasPhoto) =>
-    new(r.Id, r.Score, r.Comment, r.Color, r.Kind, r.Brand, hasPhoto, Utc(r.UpdatedAt));
+    new(r.Id, r.Score, r.Comment, r.Color, r.Kind, r.Brand, hasPhoto, Utc(r.UpdatedAt), r.CheckStatus);
+
+// A rating waiting for a check that belongs to one of your accepted friends (never your own).
+static async Task<Rating?> CheckableRating(int id, User me, AppDb db)
+{
+    var rating = await db.Ratings.SingleOrDefaultAsync(r => r.Id == id && r.CheckStatus == Checks.Pending);
+    if (rating == null || rating.UserId == me.Id) return null;
+    var isFriend = await db.Friendships.AnyAsync(f => f.Accepted &&
+        ((f.FromUserId == me.Id && f.ToUserId == rating.UserId) || (f.FromUserId == rating.UserId && f.ToUserId == me.Id)));
+    return isFriend ? rating : null;
+}
 
 // Whole seconds in UTC, so the app gets plain ISO 8601 dates like 2026-10-25T21:00:00Z.
 static DateTime Utc(DateTime value) => new(value.Ticks - value.Ticks % TimeSpan.TicksPerSecond, DateTimeKind.Utc);
 
-record RatingInput(int? Score, string? Comment, string? Color, string? Kind, string? Brand);
+record RatingInput(int? Score, string? Comment, string? Color, string? Kind, string? Brand, bool? NeedsCheck);
+record CheckInput(bool Ok);
+record FriendCheckDto(int Id, string FriendName, string? Color, string? Kind, string? Brand, bool HasPhoto);
 record FriendInput(string? Email);
 record PlayerDto(int? FriendshipId, string Name, bool IsMe, int Cars, List<string> Colors, List<string> Kinds, List<string> Brands);
 record FriendRequestDto(int Id, string Name, string? Email);
-record FriendsDto(List<PlayerDto> Players, List<FriendRequestDto> Incoming, List<FriendRequestDto> Outgoing);
-record RatingDto(int Id, int? Score, string Comment, string? Color, string? Kind, string? Brand, bool HasPhoto, DateTime UpdatedAt);
-record MyRatingDto(string Plate, int? Score, string Comment, string? Color, string? Kind, string? Brand, bool HasPhoto, DateTime UpdatedAt);
+record FriendsDto(List<PlayerDto> Players, List<FriendRequestDto> Incoming, List<FriendRequestDto> Outgoing, List<FriendCheckDto> Checks);
+record RatingDto(int Id, int? Score, string Comment, string? Color, string? Kind, string? Brand, bool HasPhoto, DateTime UpdatedAt, string? CheckStatus);
+record MyRatingDto(string Plate, int? Score, string Comment, string? Color, string? Kind, string? Brand, bool HasPhoto, DateTime UpdatedAt, string? CheckStatus);
 record MyRatingsDto(int Count, List<MyRatingDto> Ratings);
 
 // The colors the app offers. Keep in sync with CarColor in the iOS app.
@@ -293,10 +375,16 @@ static class CarKinds
 static class CarBrands
 {
     public static readonly HashSet<string> All =
-        ["volvo", "volkswagen", "toyota", "audi", "bmw", "mercedes", "kia", "ford", "skoda", "tesla", "renault",
-         "peugeot", "hyundai", "nissan", "polestar", "saab", "porsche", "ferrari", "lamborghini"];
+        ["volvo", "volkswagen", "toyota", "audi", "bmw", "mercedes", "kia", "ford", "skoda", "opel", "tesla", "renault", "peugeot", "citroen", "hyundai", "nissan", "mazda", "honda", "subaru", "mitsubishi", "suzuki", "seat", "dacia", "fiat", "mini", "jeep", "mg", "scania", "polestar", "saab", "cupra", "byd", "lexus", "landrover", "jaguar", "smart", "alfaromeo", "man", "daf", "iveco", "porsche", "ferrari", "lamborghini", "maserati", "bentley", "rollsroyce", "astonmartin", "mclaren", "koenigsegg", "bugatti"];
 }
 record PlateDto(string Plate, RatingDto? MyRating);
+
+static class Checks
+{
+    public const string Pending = "pending";
+    public const string Confirmed = "confirmed";
+    public const string Rejected = "rejected";
+}
 
 static partial class Plates
 {

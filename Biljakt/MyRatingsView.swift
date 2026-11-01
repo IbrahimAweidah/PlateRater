@@ -93,6 +93,9 @@ struct MyRatingRow: View {
             Spacer()
             VStack(alignment: .trailing, spacing: 4) {
                 HStack(spacing: 4) {
+                    if let status = rating.checkStatus {
+                        Text(status.mark).font(.caption)
+                    }
                     if let color = CarColor(key: rating.color) {
                         ColorDot(color: color, size: 18)
                     }

@@ -23,7 +23,7 @@
 ## How it fits together
 
 - The app signs in with Google and sends the ID token on every request. The API validates it against Google's keys (JwtBearer, authority `https://accounts.google.com`, audience = the iOS client ID in `Google:ClientIds`).
-- Endpoints: `GET /api/plates/{plate}`, `PUT /api/plates/{plate}/rating` (`{comment, color, kind, brand}`; `score` optional and unused by the app), `DELETE /api/plates/{plate}/rating`, `PUT|GET|DELETE /api/plates/{plate}/rating/photo` (raw JPEG/PNG body, max 3 MB), `GET /api/me/ratings`, `GET|POST /api/friends` (`{email}`), `POST /api/friends/{id}/accept`, `DELETE /api/friends/{id}`. One rating per Google account per plate. Ratings are private: every endpoint returns only the signed-in user's own ratings, comments and photos, never anyone else's (decided 2026-11-01 after a legal review, to keep personal data about car owners from being shown to others). Friends, added by Google e-mail and accepted by the other side, see only each other's first name and which colors, kinds and brands of car they found.
+- Endpoints: `GET /api/plates/{plate}`, `PUT /api/plates/{plate}/rating` (`{comment, color, kind, brand}`; `score` optional and unused by the app), `DELETE /api/plates/{plate}/rating`, `PUT|GET|DELETE /api/plates/{plate}/rating/photo` (raw JPEG/PNG body, max 3 MB), `GET /api/me/ratings`, `GET|POST /api/friends` (`{email}`), `POST /api/friends/{id}/accept`, `DELETE /api/friends/{id}`, friend checks: `PUT /api/plates/{plate}/rating/checkphoto`, `GET /api/friends/checks/{id}/photo`, `POST /api/friends/checks/{id}` (`{ok}`); `PUT .../rating` also takes `needsCheck`. One rating per Google account per plate. Ratings are private: every endpoint returns only the signed-in user's own ratings, comments and photos, never anyone else's (decided 2026-11-01 after a legal review, to keep personal data about car owners from being shown to others). Friends, added by Google e-mail and accepted by the other side, see only each other's first name and which colors, kinds and brands of car they found. One exception: when the photo doesn't match what was picked (CarGuesser), the find is `pending` (❗) and gives no points until an accepted friend confirms it; that friend sees the first name, the picks and a copy of the photo with the plate pixelated on the phone (`PlateScanner.hidingPlates`), never the plate. The copy (`BiljaktPhotos.CheckData`) is deleted once answered.
 
 ## Where things run
 
@@ -48,12 +48,14 @@
 A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR3xbetS37BPqkhL. Main points and what is still open before App Store launch:
 
 - Done: ratings, comments and photos are private (only the author sees them), because public ratings of a plate are personal data about the car owner and free text can be defamation.
-- Keep it that way: never show one user's plates, ratings, comments or photos to another user, friends included.
+- Keep it that way: never show one user's plates, ratings, comments or photos to another user, friends included. Only exception: the plate-pixelated check photo for a pending find, shown to accepted friends until answered.
 - Still to do: privacy policy and terms (link in the app), in-app account deletion, Sign in with Apple, 13-year age limit, "never use while driving" warning, data retention, SmarterASP data processing agreement and data location, own DB user separate from Ibrax_1, a real domain with its own certificate. A lawyer should review before launch.
 
 ## Recent changes (newest first)
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
+
+- 2026-11-01 – Feedback round: 50 brands (`CarBrand`, `CarBrands`) with our own `BrandBadge` (colored circle + initials, not trademark logos) and a searchable `BrandPicker`; "Fota bilen" on Spana (photo of the whole car: plate read, then color/kind/brand guessed; without a plate the photo waits for a typed plate); tap a found color/kind/brand in Jakt to list those cars (`FoundCarsView`); friend checks (❗ pending/confirmed/rejected, `CheckStatus`, Tävla shows "Kontrollera kompisarnas fynd"). Needs `BiljaktAPI/update-checks.sql` run in the database BEFORE the API deploy (new columns `CheckStatus`, `CheckedByUserId`, `CheckData`).
 
 - 2026-11-01 – Database reset instead of migration (the rename script didn't take in SmarterASP's query editor): `reset-database.sql` drops everything and creates empty `Biljakt*` tables; `AppDb.cs` now maps to `Biljakt*`.
 - 2026-11-01 – Renamed the rest to Biljakt: `PlateRaterAPI/` → `BiljaktAPI/` (BiljaktAPI.dll, namespace BiljaktAPI), Info.plist key `BiljaktAPIBaseURL`, connection string `Biljakt` (falls back to `PlateRater`), new `schema.sql` with `Biljakt*` tables; old schema-2/3/4 scripts removed (schema-4 would have failed: a CHECK constraint blocks ALTER COLUMN).
