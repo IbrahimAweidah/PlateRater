@@ -10,7 +10,7 @@
   - `APIClient.swift` – calls the API with the Google ID token as a bearer token.
   - `RatingStore.swift`, `PlateDetailView.swift`, `ContentView.swift` (tabs: Spana, Mina betyg, Jakt, Tävla), `MyRatingsView.swift`, `ColorHuntView.swift` (Jakt: colors, car kinds and brands), `FriendsView.swift` (friends and leaderboard), `SignInView.swift` – UI and state.
   - `PlateScanner.swift` – reads the plate from a photo on the device (Apple Vision text recognition, no server, free). Used by "Fota skylten" on the Spana tab; the photo is then attached to the rating.
-  - `CarGuesser.swift` – guesses brand (text on the car via Vision OCR) and kind (Vision image classifier) from the rating photo, on the device. Only fills empty fields.
+  - `CarGuesser.swift` – guesses color (car cut out with Vision foreground mask, pixels vote for a `CarColor`), brand (text on the car via Vision OCR) and kind (Vision image classifier) from the rating photo, on the device. Fills empty fields and warns when the photo doesn't match what the user picked.
   - `Theme.swift` – Galen colors, `GalenLevel` (1 🐌 Snigelfart … 5 🤪 Galen förare), `CarColor`, `CarKind` and `CarBrand` (keys must match `CarColors`, `CarKinds` and `CarBrands` in the API), `HuntScore`, `SpotterRank`.
   - UI text is Swedish. Bundle ID stays `com.ibrahimaweidah.PlateRater` (Google OAuth client is tied to it); display name is Galen.
   - `Config.xcconfig` – `GOOGLE_CLIENT_ID`, `GOOGLE_REVERSED_CLIENT_ID`, `API_BASE_URL`, fed into `Info.plist`. In xcconfig `//` starts a comment, so URLs are written `https:/$()/host/`.
@@ -56,7 +56,7 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
 
-- 2026-11-01 – Brand hunt and photo guessing: ratings can have a brand (`CarBrand`, `Ratings.Brand`, 19 brands), Jakt has a Märken tab, brands count on the leaderboard. When a photo is added, `CarGuesser` guesses brand and kind on the phone. A real make/model recognizer would need a Core ML model or a paid cloud API; not done.
+- 2026-11-01 – Brand hunt and photo guessing: ratings can have a brand (`CarBrand`, `Ratings.Brand`, 19 brands), Jakt has a Märken tab, brands count on the leaderboard. When a photo is added, `CarGuesser` guesses color, brand and kind on the phone and warns on a mismatch. A real make/model recognizer would need a Core ML model or a paid cloud API; not done.
 
 - 2026-11-01 – Friends: new Tävla tab, add friends by Google e-mail, accept/decline, leaderboard by hunt points (`FriendsView.swift`, `/api/friends`, `schema-3-friends.sql`). Friends see first name, points, and which colors/kinds were found only.
 - 2026-11-01 – Car-kind hunt: ratings can have a kind of car (`CarKind`, `Ratings.Kind`); Färgjakt tab renamed Jakt with Färger/Biltyper; points via `HuntScore`.

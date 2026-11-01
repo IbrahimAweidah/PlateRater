@@ -314,21 +314,42 @@ struct PlateDetailView: View {
         }
     }
 
-    /// Lets Galen guess the brand and kind from the photo, on the phone. Only fills in what is still empty.
+    /// Lets Galen guess the color, brand and kind from the photo, on the phone. Fills in what is still empty,
+    /// and says so if the photo doesn't match what you picked.
     private func guessCar(from image: UIImage) async {
         let guess = await CarGuesser.guess(from: image)
         var guessed: [String] = []
-        if carBrand == nil, let brand = guess.brand {
-            carBrand = brand
-            guessed.append(brand.name)
+        var notes: [String] = []
+        if let color = guess.color {
+            if carColor == nil {
+                carColor = color
+                guessed.append("\(color.name.lowercased())")
+            } else if carColor != color {
+                notes.append("Bilen på bilden ser \(color.name.lowercased()) ut. Stämmer färgen?")
+            } else {
+                notes.append("✅ Färgen stämmer med bilden!")
+            }
         }
-        if carKind == nil, let kind = guess.kind {
-            carKind = kind
-            guessed.append("\(kind.emoji) \(kind.name)")
+        if let brand = guess.brand {
+            if carBrand == nil {
+                carBrand = brand
+                guessed.append(brand.name)
+            } else if carBrand != brand {
+                notes.append("Det står \(brand.name) på bilen. Stämmer märket?")
+            }
         }
-        guessText = guessed.isEmpty
-            ? "🤖 Galen kunde inte gissa bilen från bilden. Välj själv!"
-            : "🤖 Galen gissar: \(guessed.joined(separator: ", ")). Ändra om det är fel!"
+        if let kind = guess.kind {
+            if carKind == nil {
+                carKind = kind
+                guessed.append("\(kind.emoji) \(kind.name.lowercased())")
+            } else if carKind != kind && kind != .car {
+                notes.append("Bilen ser ut som en \(kind.name.lowercased()). Stämmer sorten?")
+            }
+        }
+        if !guessed.isEmpty {
+            notes.insert("🤖 Galen gissar: \(guessed.joined(separator: ", ")). Ändra om det är fel!", at: 0)
+        }
+        guessText = notes.isEmpty ? "🤖 Galen kunde inte gissa bilen från bilden. Välj själv!" : notes.joined(separator: "\n")
     }
 
     private func deletePhoto() async {
