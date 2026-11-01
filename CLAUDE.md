@@ -19,6 +19,7 @@
   - `reset-database.sql` – DELETES ALL DATA: drops the Biljakt and old PlateRater tables and recreates the Biljakt tables empty. Used once on 2026-11-01 instead of a rename migration.
   - `appsettings.json` – connection string `Biljakt` with a `YOUR-DB-PASSWORD` placeholder. Never commit the real password. The server's own appsettings.json still names the connection string `PlateRater`; Program.cs reads `Biljakt` and falls back to `PlateRater`.
 - `SETUP.md` – step-by-step setup guide.
+- `ROADMAP.md` – what is planned for future releases: launch checklist and how the app will make money (Biljakt Familj unlock, seasonal hunt packs, sponsored hunts; no ads, no selling data).
 
 ## How it fits together
 
@@ -55,6 +56,8 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 ## Recent changes (newest first)
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
+
+- 2026-11-01 – Added `ROADMAP.md` (launch checklist and money plan agreed with the owner). Ibrax AB applied for the Apple Developer Program (waiting for Apple).
 
 - 2026-11-01 – First Mac build of the Apple sign-in code: simulator build succeeded after a fix in `APIClient.signInWithApple` (String/NSNull dictionary). Device build failed because team 4T5RSJWR7W is a free personal team, which can't use Sign in with Apple. So it is switched off: `AuthManager.appleSignInEnabled = false` hides the button and `CODE_SIGN_ENTITLEMENTS` was removed (`Biljakt.entitlements` is kept). After joining the paid Apple Developer Program: add Sign in with Apple in Signing & Capabilities and set the flag to true. TestFlight also needs the paid program.
 
