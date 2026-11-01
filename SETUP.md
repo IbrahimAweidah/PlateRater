@@ -5,7 +5,7 @@ Biljakt is an iOS app (`Biljakt/`, open `Biljakt.xcodeproj`) and an ASP.NET Core
 ## Database
 
 - New, empty database: run `BiljaktAPI/schema.sql` in Web SQL Manager (SmarterASP Control Panel > Databases > MSSQL).
-- The production database `db_a30625_platerater` had the old `PlateRater*` tables. Run `BiljaktAPI/migrate-to-biljakt.sql` once to rename them to `Biljakt*`.
+- To start over (deletes all data): run `BiljaktAPI/reset-database.sql`. It drops the Biljakt tables and the old `PlateRater*` tables and creates the Biljakt tables empty.
 
 ## API
 

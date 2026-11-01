@@ -16,7 +16,7 @@
   - `Config.xcconfig` – `GOOGLE_CLIENT_ID`, `GOOGLE_REVERSED_CLIENT_ID`, `API_BASE_URL`, fed into `Info.plist`. In xcconfig `//` starts a comment, so URLs are written `https:/$()/host/`.
 - `BiljaktAPI/` – ASP.NET Core 8 minimal API (`Program.cs`, `AppDb.cs`, builds `BiljaktAPI.dll`), EF Core with SQL Server.
   - `schema.sql` – the whole schema (`BiljaktUsers`, `BiljaktRatings`, `BiljaktPhotos`, `BiljaktFriendships`) for a fresh database.
-  - `migrate-to-biljakt.sql` – one-time migration of the production database from the old `PlateRater*` tables: renames tables and constraints, makes `Score` nullable, adds `PlateRater*` synonyms so an older API keeps working.
+  - `reset-database.sql` – DELETES ALL DATA: drops the Biljakt and old PlateRater tables and recreates the Biljakt tables empty. Used once on 2026-11-01 instead of a rename migration.
   - `appsettings.json` – connection string `Biljakt` with a `YOUR-DB-PASSWORD` placeholder. Never commit the real password. The server's own appsettings.json still names the connection string `PlateRater`; Program.cs reads `Biljakt` and falls back to `PlateRater`.
 - `SETUP.md` – step-by-step setup guide.
 
@@ -34,7 +34,7 @@
 ## Status
 
 - The original API is deployed and the first Xcode build succeeded.
-- schema-2 and schema-3 are run; the Biljakt API was deployed 2026-11-01 13:42 UTC by the GitHub Actions workflow (check passed: /api/friends → 401). `migrate-to-biljakt.sql` must be run before `AppDb.cs` switches to the `Biljakt*` table names (user was asked 2026-11-01). The Swift code after the rename has not been compiled yet.
+- schema-2 and schema-3 are run; the Biljakt API was deployed 2026-11-01 13:42 UTC by the GitHub Actions workflow (check passed: /api/friends → 401). `AppDb.cs` uses the `Biljakt*` tables; the user is to run `reset-database.sql` (drops old test data) — until then the API can't find its tables. The Swift code after the rename has not been compiled yet.
 - No free API gives Swedish vehicle data (make/model/color) by plate; Transportstyrelsen and the commercial options (biluppgifter.se, car.info, tic.io, minbilkoll.se) need an agreement or a paid plan.
 
 ## Branches
@@ -55,7 +55,8 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
 
-- 2026-11-01 – Renamed the rest to Biljakt: `PlateRaterAPI/` → `BiljaktAPI/` (BiljaktAPI.dll, namespace BiljaktAPI), Info.plist key `BiljaktAPIBaseURL`, connection string `Biljakt` (falls back to `PlateRater`), new `schema.sql` with `Biljakt*` tables and `migrate-to-biljakt.sql`; old schema-2/3/4 scripts removed (schema-4 would have failed: a CHECK constraint blocks ALTER COLUMN).
+- 2026-11-01 – Database reset instead of migration (the rename script didn't take in SmarterASP's query editor): `reset-database.sql` drops everything and creates empty `Biljakt*` tables; `AppDb.cs` now maps to `Biljakt*`.
+- 2026-11-01 – Renamed the rest to Biljakt: `PlateRaterAPI/` → `BiljaktAPI/` (BiljaktAPI.dll, namespace BiljaktAPI), Info.plist key `BiljaktAPIBaseURL`, connection string `Biljakt` (falls back to `PlateRater`), new `schema.sql` with `Biljakt*` tables; old schema-2/3/4 scripts removed (schema-4 would have failed: a CHECK constraint blocks ALTER COLUMN).
 - 2026-11-01 – First automatic deploy via GitHub Actions succeeded (FTP secrets set; deploys on push to PlateRaterAPI/ on main or the Biljakt branch).
 - 2026-11-01 – Full rename Galen → Biljakt in code: `Biljakt.xcodeproj`, `Biljakt/` folder, target/module Biljakt, `BiljaktApp`, `AppStyle`, `BiljaktLogo`. Added "En produkt av Ibrax AB" and copyright © 2026 Ibrax AB.
 - 2026-11-01 – Added `.github/workflows/deploy-api.yml` for one-click API deploys from GitHub (secrets must be added by the user).

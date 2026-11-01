@@ -60,17 +60,17 @@ public class AppDb(DbContextOptions<AppDb> options) : DbContext(options)
 
     protected override void OnModelCreating(ModelBuilder model)
     {
-        model.Entity<User>().ToTable("PlateRaterUsers");
+        model.Entity<User>().ToTable("BiljaktUsers");
         model.Entity<User>().HasIndex(u => u.GoogleSubject).IsUnique();
 
-        model.Entity<Rating>().ToTable("PlateRaterRatings");
+        model.Entity<Rating>().ToTable("BiljaktRatings");
         model.Entity<Rating>().HasIndex(r => new { r.Plate, r.UserId }).IsUnique();
 
-        model.Entity<Photo>().ToTable("PlateRaterPhotos");
+        model.Entity<Photo>().ToTable("BiljaktPhotos");
         model.Entity<Photo>().HasKey(p => p.RatingId);
         model.Entity<Photo>().Property(p => p.RatingId).ValueGeneratedNever();
 
-        model.Entity<Friendship>().ToTable("PlateRaterFriendships");
+        model.Entity<Friendship>().ToTable("BiljaktFriendships");
         model.Entity<Friendship>().HasIndex(f => new { f.FromUserId, f.ToUserId }).IsUnique();
         model.Entity<Friendship>().HasOne(f => f.FromUser).WithMany().HasForeignKey(f => f.FromUserId).OnDelete(DeleteBehavior.NoAction);
         model.Entity<Friendship>().HasOne(f => f.ToUser).WithMany().HasForeignKey(f => f.ToUserId).OnDelete(DeleteBehavior.NoAction);
