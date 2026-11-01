@@ -49,11 +49,13 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 
 - Done: ratings, comments and photos are private (only the author sees them), because public ratings of a plate are personal data about the car owner and free text can be defamation.
 - Keep it that way: never show one user's plates, ratings, comments or photos to another user, friends included. Only exception: the plate-pixelated check photo for a pending find, shown to accepted friends until answered.
-- Still to do: privacy policy and terms (link in the app), in-app account deletion, Sign in with Apple, 13-year age limit, "never use while driving" warning, data retention, SmarterASP data processing agreement and data location, own DB user separate from Ibrax_1, a real domain with its own certificate. A lawyer should review before launch.
+- Still to do: real brand logos are on for testing (`BrandBadge.useRealLogos`); turn off or get permission before launch. Privacy policy and terms (link in the app), in-app account deletion, Sign in with Apple, 13-year age limit, "never use while driving" warning, data retention, SmarterASP data processing agreement and data location, own DB user separate from Ibrax_1, a real domain with its own certificate. A lawyer should review before launch.
 
 ## Recent changes (newest first)
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
+
+- 2026-11-01 – Real brand logos (user's wish) in `Assets.xcassets/BrandLogos/logo-<key>` (50 PNGs, 256px, from github.com/filippofilip95/car-logos-dataset), shown by `BrandBadge` on a white circle while `BrandBadge.useRealLogos` is true; false falls back to our own initials badges. The logos are trademarks: turn it off before App Store unless the brands allow it (App Review 5.2.1).
 
 - 2026-11-01 – Feedback round: 50 brands (`CarBrand`, `CarBrands`) with our own `BrandBadge` (colored circle + initials, not trademark logos) and a searchable `BrandPicker`; "Fota bilen" on Spana (photo of the whole car: plate read, then color/kind/brand guessed; without a plate the photo waits for a typed plate); tap a found color/kind/brand in Jakt to list those cars (`FoundCarsView`); friend checks (❗ pending/confirmed/rejected, `CheckStatus`, Tävla shows "Kontrollera kompisarnas fynd"). `BiljaktAPI/update-checks.sql` run by the user (new columns `CheckStatus`, `CheckedByUserId`, `CheckData`), API deployed 14:11 UTC. Swift not compiled yet.
 

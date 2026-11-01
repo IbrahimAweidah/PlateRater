@@ -422,25 +422,46 @@ enum CarBrand: String, CaseIterable, Identifiable {
     }
 }
 
-/// A round badge for a brand: its initials on its color.
+/// A round badge for a brand: the brand's real logo on white while `useRealLogos` is on,
+/// otherwise its initials on its color.
+///
+/// The logos are the brands' trademarks (images from github.com/filippofilip95/car-logos-dataset,
+/// in Assets.xcassets/BrandLogos). Apple's App Review guideline 5.2.1 asks for permission to use them,
+/// so turn `useRealLogos` off before an App Store release unless that permission is in place.
 struct BrandBadge: View {
+    static let useRealLogos = true
+
     let brand: CarBrand
     var size: CGFloat = 44
 
     var body: some View {
-        Circle()
-            .fill(brand.tint.gradient)
-            .overlay(Circle().strokeBorder(.white.opacity(0.6), lineWidth: size * 0.05))
-            .overlay {
-                Text(brand.short)
-                    .font(.system(size: size * 0.36, weight: .heavy, design: .rounded))
-                    .foregroundStyle(.white)
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(1)
-                    .padding(size * 0.12)
-            }
-            .frame(width: size, height: size)
-            .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+        if Self.useRealLogos, let logo = UIImage(named: "logo-\(brand.rawValue)") {
+            Circle()
+                .fill(.white)
+                .overlay(Circle().strokeBorder(brand.tint.opacity(0.5), lineWidth: max(1, size * 0.04)))
+                .overlay {
+                    Image(uiImage: logo)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(size * 0.14)
+                }
+                .frame(width: size, height: size)
+                .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+        } else {
+            Circle()
+                .fill(brand.tint.gradient)
+                .overlay(Circle().strokeBorder(.white.opacity(0.6), lineWidth: size * 0.05))
+                .overlay {
+                    Text(brand.short)
+                        .font(.system(size: size * 0.36, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                        .minimumScaleFactor(0.5)
+                        .lineLimit(1)
+                        .padding(size * 0.12)
+                }
+                .frame(width: size, height: size)
+                .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+        }
     }
 }
 
