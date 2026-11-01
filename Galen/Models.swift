@@ -7,15 +7,12 @@ struct Rating: Identifiable, Decodable, Equatable {
     let color: String?
     let hasPhoto: Bool
     let updatedAt: Date
-    let isMine: Bool
 }
 
+/// What the API returns for a plate. Ratings are private, so this only ever holds your own rating.
 struct PlateSummary: Decodable {
     let plate: String
-    let average: Double?
-    let count: Int
     let myRating: Rating?
-    let ratings: [Rating]
 }
 
 /// One of the signed-in user's own ratings, as listed on "Mina betyg".

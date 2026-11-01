@@ -34,19 +34,14 @@ api.MapGet("/plates/{plate}", async (string plate, ClaimsPrincipal principal, Ap
     plate = Plates.Normalize(plate);
     if (!Plates.IsValid(plate)) return Results.BadRequest(new { error = "Ogiltig registreringsskylt." });
 
+    // Ratings are private: you only ever get your own rating back, never anyone else's.
     var me = await CurrentUser(principal, db);
-    var rows = await db.Ratings
-        .Where(r => r.Plate == plate)
-        .OrderByDescending(r => r.UpdatedAt)
+    var mine = await db.Ratings
+        .Where(r => r.Plate == plate && r.UserId == me.Id)
         .Select(r => new { Rating = r, HasPhoto = db.Photos.Any(p => p.RatingId == r.Id) })
-        .ToListAsync();
+        .SingleOrDefaultAsync();
 
-    // Photos are private: others only see that a rating exists, never its photo.
-    var ratings = rows.Select(x => ToDto(x.Rating, me, x.HasPhoto)).ToList();
-    var mine = ratings.FirstOrDefault(r => r.IsMine);
-    double? average = rows.Count == 0 ? null : Math.Round(rows.Average(x => x.Rating.Score), 2);
-
-    return Results.Ok(new PlateDto(plate, average, rows.Count, mine, ratings.Take(100).ToList()));
+    return Results.Ok(new PlateDto(plate, mine == null ? null : ToDto(mine.Rating, mine.HasPhoto)));
 });
 
 // Each account has one rating per plate; posting again updates it.
@@ -74,7 +69,7 @@ api.MapPut("/plates/{plate}/rating", async (string plate, RatingInput input, Cla
     rating.UpdatedAt = now;
     await db.SaveChangesAsync();
 
-    return Results.Ok(ToDto(rating, me, await db.Photos.AnyAsync(p => p.RatingId == rating.Id)));
+    return Results.Ok(ToDto(rating, await db.Photos.AnyAsync(p => p.RatingId == rating.Id)));
 });
 
 api.MapDelete("/plates/{plate}/rating", async (string plate, ClaimsPrincipal principal, AppDb db) =>
@@ -169,18 +164,14 @@ static async Task<Rating?> MyRating(string plate, ClaimsPrincipal principal, App
     return await db.Ratings.SingleOrDefaultAsync(r => r.Plate == plate && r.UserId == me.Id);
 }
 
-// Everyone sees the car color; the photo flag is only set on your own rating.
-static RatingDto ToDto(Rating r, User me, bool hasPhoto)
-{
-    var isMine = r.UserId == me.Id;
-    return new RatingDto(r.Id, r.Score, r.Comment, r.Color, isMine && hasPhoto, Utc(r.UpdatedAt), isMine);
-}
+static RatingDto ToDto(Rating r, bool hasPhoto) =>
+    new(r.Id, r.Score, r.Comment, r.Color, hasPhoto, Utc(r.UpdatedAt));
 
 // Whole seconds in UTC, so the app gets plain ISO 8601 dates like 2026-10-25T21:00:00Z.
 static DateTime Utc(DateTime value) => new(value.Ticks - value.Ticks % TimeSpan.TicksPerSecond, DateTimeKind.Utc);
 
 record RatingInput(int Score, string? Comment, string? Color);
-record RatingDto(int Id, int Score, string Comment, string? Color, bool HasPhoto, DateTime UpdatedAt, bool IsMine);
+record RatingDto(int Id, int Score, string Comment, string? Color, bool HasPhoto, DateTime UpdatedAt);
 record MyRatingDto(string Plate, int Score, string Comment, string? Color, bool HasPhoto, DateTime UpdatedAt);
 record MyRatingsDto(int Count, List<MyRatingDto> Ratings);
 
@@ -190,7 +181,7 @@ static class CarColors
     public static readonly HashSet<string> All =
         ["white", "black", "grey", "silver", "red", "blue", "green", "yellow", "orange", "brown", "purple", "pink"];
 }
-record PlateDto(string Plate, double? Average, int Count, RatingDto? MyRating, List<RatingDto> Ratings);
+record PlateDto(string Plate, RatingDto? MyRating);
 
 static partial class Plates
 {

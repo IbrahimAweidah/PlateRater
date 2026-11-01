@@ -24,7 +24,6 @@ struct PlateDetailView: View {
             header
             ratingForm
             photoSection
-            othersSection
         }
         .navigationTitle(plate)
         .navigationBarTitleDisplayMode(.inline)
@@ -62,17 +61,17 @@ struct PlateDetailView: View {
         Section {
             VStack(spacing: 12) {
                 PlateBadge(plate: plate, size: 30)
-                if let average = summary?.average, let count = summary?.count {
-                    let verdict = GalenLevel(average: average)
+                if let mine = summary?.myRating {
+                    let verdict = GalenLevel(rawValue: mine.score) ?? .cheeky
                     Text("\(verdict.emoji) \(verdict.name)")
                         .font(Galen.title(26))
-                    Text("Galen-mätare: \(average, specifier: "%.1f") av 5 · \(count) betyg")
+                    Text("Du spanade in den här bilen \(mine.updatedAt.formatted(date: .abbreviated, time: .omitted))")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 } else if summary == nil && errorMessage == nil {
                     ProgressView()
                 } else if summary != nil {
-                    Text("Ingen har spanat in den här bilen än. Bli först! 🕵️")
+                    Text("Du har inte spanat in den här bilen än. Kör! 🕵️")
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -202,48 +201,7 @@ struct PlateDetailView: View {
         } header: {
             Text("Din bild")
         } footer: {
-            Text("Bara du kan se dina bilder.")
-        }
-    }
-
-    private var othersSection: some View {
-        Section("Alla betyg") {
-            let ratings = summary?.ratings ?? []
-            if ratings.isEmpty {
-                Text("Inga betyg än.")
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(ratings) { rating in
-                    let ratingLevel = GalenLevel(rawValue: rating.score) ?? .cheeky
-                    HStack(alignment: .top, spacing: 12) {
-                        Text(ratingLevel.emoji)
-                            .font(.title)
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(ratingLevel.name)
-                                    .font(.subheadline.bold())
-                                if rating.isMine {
-                                    Text("Du")
-                                        .font(.caption.bold())
-                                        .foregroundStyle(Galen.pink)
-                                }
-                                Spacer()
-                                if let color = CarColor(key: rating.color) {
-                                    ColorDot(color: color, size: 14)
-                                }
-                                Text(rating.updatedAt, style: .date)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            if !rating.comment.isEmpty {
-                                Text(rating.comment)
-                                    .font(.subheadline)
-                            }
-                        }
-                    }
-                    .padding(.vertical, 2)
-                }
-            }
+            Text("Bara du kan se dina betyg, kommentarer och bilder.")
         }
     }
 

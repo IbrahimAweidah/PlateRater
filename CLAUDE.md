@@ -22,7 +22,7 @@
 ## How it fits together
 
 - The app signs in with Google and sends the ID token on every request. The API validates it against Google's keys (JwtBearer, authority `https://accounts.google.com`, audience = the iOS client ID in `Google:ClientIds`).
-- Endpoints: `GET /api/plates/{plate}`, `PUT /api/plates/{plate}/rating` (`{score, comment, color}`), `DELETE /api/plates/{plate}/rating`, `PUT|GET|DELETE /api/plates/{plate}/rating/photo` (raw JPEG/PNG body, max 3 MB), `GET /api/me/ratings`. One rating per Google account per plate. Other users' names, emails and photos are never returned.
+- Endpoints: `GET /api/plates/{plate}`, `PUT /api/plates/{plate}/rating` (`{score, comment, color}`), `DELETE /api/plates/{plate}/rating`, `PUT|GET|DELETE /api/plates/{plate}/rating/photo` (raw JPEG/PNG body, max 3 MB), `GET /api/me/ratings`. One rating per Google account per plate. Ratings are private: every endpoint returns only the signed-in user's own ratings, comments and photos, never anyone else's (decided 2026-11-01 after a legal review, to keep personal data about car owners from being shown to others).
 
 ## Where things run
 

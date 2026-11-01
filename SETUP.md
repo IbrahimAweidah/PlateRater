@@ -47,7 +47,7 @@ The app now signs in with Google and stores ratings on your server. There are fo
 - The app gets a Google ID token from Google's sign-in SDK and sends it with every request.
 - The API checks the token's signature against Google's keys and checks that it was issued for your iOS client ID. Requests without a valid token get a 401.
 - On first sign-in, each Google account gets a row in `PlateRaterUsers`. Each account has one rating per plate, and rating the same plate again updates it.
-- Other people's ratings show only a score, a comment, and a date. Names and emails are never sent to the app.
+- Ratings are private. You only see your own ratings, comments and photos; nobody else's are ever sent to the app.
 
 Your original app files are backed up in `_backup-before-backend/`.
 
