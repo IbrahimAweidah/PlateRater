@@ -1,5 +1,6 @@
 # Builds the API and uploads it to SmarterASP.NET over FTP, so nobody needs .NET locally.
-# Run it from GitHub: Actions > "Deploy API to SmarterASP" > Run workflow (pick the branch).
+# Runs by itself when PlateRaterAPI/ changes on main or the Biljakt branch, or from GitHub:
+# Actions > "Deploy API to SmarterASP" > Run workflow (pick the branch).
 #
 # Needs these repository secrets (Settings > Secrets and variables > Actions):
 #   FTP_HOST      e.g. win6xxx.site4now.net (SmarterASP control panel > FTP)
@@ -12,6 +13,16 @@ name: Deploy API to SmarterASP
 
 on:
   workflow_dispatch:
+  # Deploy automatically when the API changes on the Biljakt branch or main.
+  push:
+    branches: [main, claude/project-thread-y1essk]
+    paths:
+      - "PlateRaterAPI/**"
+      - ".github/workflows/deploy-api.yml"
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
 
 jobs:
   deploy:
