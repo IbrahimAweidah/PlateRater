@@ -1,68 +1,131 @@
 import SwiftUI
 
-/// The color hunt: find a car of every color. Rare colors are worth more points.
+/// The hunt: find a car of every color and every kind. Rare ones are worth more points.
 struct ColorHuntView: View {
     var store: RatingStore
 
-    private var counts: [CarColor: Int] {
+    enum Hunt: String, CaseIterable, Identifiable {
+        case colors = "Färger"
+        case kinds = "Biltyper"
+        var id: String { rawValue }
+    }
+
+    @State private var hunt = Hunt.colors
+
+    private var colorCounts: [CarColor: Int] {
         store.mine.reduce(into: [:]) { counts, rating in
             if let color = CarColor(key: rating.color) { counts[color, default: 0] += 1 }
         }
     }
 
+    private var kindCounts: [CarKind: Int] {
+        store.mine.reduce(into: [:]) { counts, rating in
+            if let kind = CarKind(key: rating.kind) { counts[kind, default: 0] += 1 }
+        }
+    }
+
     var body: some View {
-        let counts = self.counts
-        let found = CarColor.allCases.filter { counts[$0] != nil }
-        let points = found.reduce(0) { $0 + $1.points }
-        let maxPoints = CarColor.allCases.reduce(0) { $0 + $1.points }
-        let missing = CarColor.allCases.filter { counts[$0] == nil }
+        let colorCounts = self.colorCounts
+        let kindCounts = self.kindCounts
+        let points = HuntScore.points(colors: colorCounts.keys, kinds: kindCounts.keys)
 
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    Text("\(found.count) av \(CarColor.allCases.count) färger")
-                        .font(Galen.title(30))
-                    ProgressView(value: Double(found.count), total: Double(CarColor.allCases.count))
-                        .tint(Galen.pink)
-                        .padding(.horizontal, 40)
-                    Text("⭐️ \(points) av \(maxPoints) poäng")
-                        .font(.headline)
+                    Text("⭐️ \(points) av \(HuntScore.maxPoints) poäng")
+                        .font(Galen.title(26))
 
-                    if missing.isEmpty {
-                        Text("🏆 Du har hittat alla färger! Helt galet!")
-                            .font(Galen.title(20))
-                            .multilineTextAlignment(.center)
-                    } else if let next = missing.max(by: { $0.points < $1.points }) {
-                        Text("Kan du hitta en \(next.name.lowercased()) bil? Den ger \(next.points) poäng!")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
+                    Picker("Jakt", selection: $hunt) {
+                        ForEach(Hunt.allCases) { Text($0.rawValue).tag($0) }
                     }
+                    .pickerStyle(.segmented)
 
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
-                        ForEach(CarColor.allCases) { color in
-                            ColorCard(color: color, count: counts[color] ?? 0)
+                    switch hunt {
+                    case .colors:
+                        HuntProgress(
+                            found: colorCounts.count, total: CarColor.allCases.count, unit: "färger",
+                            allDone: "🏆 Du har hittat alla färger! Helt galet!",
+                            next: CarColor.allCases.filter { colorCounts[$0] == nil }.max { $0.points < $1.points }
+                                .map { "Kan du hitta en \($0.name.lowercased()) bil? Den ger \($0.points) poäng!" })
+                        grid {
+                            ForEach(CarColor.allCases) { color in
+                                HuntCard(name: color.name, points: color.points, count: colorCounts[color] ?? 0) {
+                                    ZStack {
+                                        ColorDot(color: color, size: 56)
+                                        Text("🚗").font(.title2)
+                                    }
+                                }
+                            }
+                        }
+                    case .kinds:
+                        HuntProgress(
+                            found: kindCounts.count, total: CarKind.allCases.count, unit: "biltyper",
+                            allDone: "🏆 Du har hittat alla sorters bilar! Helt galet!",
+                            next: CarKind.allCases.filter { kindCounts[$0] == nil }.max { $0.points < $1.points }
+                                .map { "Kan du hitta en \($0.name.lowercased())? Den ger \($0.points) poäng!" })
+                        grid {
+                            ForEach(CarKind.allCases) { kind in
+                                HuntCard(name: kind.name, points: kind.points, count: kindCounts[kind] ?? 0) {
+                                    Text(kind.emoji)
+                                        .font(.system(size: 36))
+                                        .frame(width: 56, height: 56)
+                                        .background(Galen.yellow.opacity(0.4), in: Circle())
+                                }
+                            }
                         }
                     }
                 }
                 .padding()
             }
-            .navigationTitle("Färgjakt")
+            .navigationTitle("Jakt")
             .refreshable { try? await store.loadMine() }
+        }
+    }
+
+    private func grid<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12, content: content)
+    }
+}
+
+private struct HuntProgress: View {
+    let found: Int
+    let total: Int
+    let unit: String
+    let allDone: String
+    let next: String?
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("\(found) av \(total) \(unit)")
+                .font(.headline)
+            ProgressView(value: Double(found), total: Double(total))
+                .tint(Galen.pink)
+                .padding(.horizontal, 40)
+            if found == total {
+                Text(allDone)
+                    .font(Galen.title(20))
+                    .multilineTextAlignment(.center)
+            } else if let next {
+                Text(next)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
     }
 }
 
-private struct ColorCard: View {
-    let color: CarColor
+private struct HuntCard<Icon: View>: View {
+    let name: String
+    let points: Int
     let count: Int
+    @ViewBuilder let icon: () -> Icon
 
     var body: some View {
         VStack(spacing: 6) {
             ZStack {
                 if count > 0 {
-                    ColorDot(color: color, size: 56)
-                    Text("🚗").font(.title2)
+                    icon()
                 } else {
                     Circle()
                         .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
@@ -71,9 +134,11 @@ private struct ColorCard: View {
                     Text("?").font(Galen.title(24)).foregroundStyle(.secondary)
                 }
             }
-            Text(color.name)
+            Text(name)
                 .font(.subheadline.bold())
-            Text(count > 0 ? "×\(count)" : "\(color.points) p")
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(count > 0 ? "×\(count)" : "\(points) p")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

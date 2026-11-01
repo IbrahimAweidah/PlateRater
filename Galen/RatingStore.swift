@@ -10,6 +10,7 @@ final class RatingStore {
     private(set) var summaries: [String: PlateSummary] = [:]
     private(set) var mine: [MyRating] = []
     private(set) var photos: [String: UIImage] = [:]
+    private(set) var friends: Friends?
     /// A photo the plate was scanned from, waiting to be attached when the rating is saved.
     var scannedPhotos: [String: UIImage] = [:]
     private let api: APIClient
@@ -31,15 +32,34 @@ final class RatingStore {
         mine = try await api.myRatings().ratings
     }
 
-    func saveRating(score: Int, comment: String, color: CarColor?, photo: UIImage?, for plate: String) async throws {
+    func saveRating(score: Int, comment: String, color: CarColor?, kind: CarKind?, photo: UIImage?, for plate: String) async throws {
         let key = PlateNumber.normalize(plate)
-        _ = try await api.saveRating(score: score, comment: comment, color: color, for: key)
+        _ = try await api.saveRating(score: score, comment: comment, color: color, kind: kind, for: key)
         if let photo, let jpeg = Self.jpeg(photo) {
             try await api.uploadPhoto(jpeg, for: key)
             photos[key] = photo
         }
         try await load(key)
         try? await loadMine()
+    }
+
+    func loadFriends() async throws {
+        friends = try await api.friends()
+    }
+
+    func addFriend(email: String) async throws {
+        try await api.addFriend(email: email)
+        try await loadFriends()
+    }
+
+    func acceptFriend(_ id: Int) async throws {
+        try await api.acceptFriend(id)
+        try await loadFriends()
+    }
+
+    func removeFriend(_ id: Int) async throws {
+        try await api.removeFriend(id)
+        try await loadFriends()
     }
 
     /// The photo on your own rating, fetched once and then kept in memory.

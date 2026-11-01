@@ -108,6 +108,72 @@ enum CarColor: String, CaseIterable, Identifiable {
     }
 }
 
+/// Kinds of car for the car-kind hunt. The raw values are what the API stores (CarKinds in the API).
+enum CarKind: String, CaseIterable, Identifiable {
+    case car, suv, van, truck, bus, motorcycle, taxi, camper, tractor, sports, vintage, emergency
+
+    var id: String { rawValue }
+
+    var name: String {
+        switch self {
+        case .car: "Vanlig bil"
+        case .suv: "Jeep/SUV"
+        case .van: "Skåpbil"
+        case .truck: "Lastbil"
+        case .bus: "Buss"
+        case .motorcycle: "Motorcykel"
+        case .taxi: "Taxi"
+        case .camper: "Husbil"
+        case .tractor: "Traktor"
+        case .sports: "Sportbil"
+        case .vintage: "Veteranbil"
+        case .emergency: "Utryckning"
+        }
+    }
+
+    var emoji: String {
+        switch self {
+        case .car: "🚗"
+        case .suv: "🚙"
+        case .van: "🚐"
+        case .truck: "🚚"
+        case .bus: "🚌"
+        case .motorcycle: "🏍️"
+        case .taxi: "🚕"
+        case .camper: "🏕️"
+        case .tractor: "🚜"
+        case .sports: "🏎️"
+        case .vintage: "🕰️"
+        case .emergency: "🚑"
+        }
+    }
+
+    /// Rare kinds are worth more in the hunt.
+    var points: Int {
+        switch self {
+        case .car, .suv: 1
+        case .van, .truck: 2
+        case .bus, .taxi, .motorcycle: 3
+        case .camper, .tractor: 4
+        case .sports, .vintage, .emergency: 5
+        }
+    }
+
+    init?(key: String?) {
+        guard let key, let kind = CarKind(rawValue: key) else { return nil }
+        self = kind
+    }
+}
+
+/// Hunt points: every color and every kind of car you have found counts once.
+enum HuntScore {
+    static func points(colors: some Sequence<CarColor>, kinds: some Sequence<CarKind>) -> Int {
+        Set(colors).reduce(0) { $0 + $1.points } + Set(kinds).reduce(0) { $0 + $1.points }
+    }
+
+    static var maxPoints: Int { points(colors: CarColor.allCases, kinds: CarKind.allCases) }
+}
+
 /// A round color dot with an outline, so white and black show on any background.
 struct ColorDot: View {
     let color: CarColor

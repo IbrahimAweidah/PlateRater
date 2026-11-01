@@ -18,7 +18,9 @@ struct ContentView: View {
             MyRatingsView(store: store)
                 .tabItem { Label("Mina betyg", systemImage: "star.fill") }
             ColorHuntView(store: store)
-                .tabItem { Label("Färgjakt", systemImage: "paintpalette.fill") }
+                .tabItem { Label("Jakt", systemImage: "paintpalette.fill") }
+            FriendsView(auth: auth, store: store)
+                .tabItem { Label("Tävla", systemImage: "trophy.fill") }
         }
         .tint(Galen.pink)
         .task { try? await store.loadMine() }

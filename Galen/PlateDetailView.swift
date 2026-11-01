@@ -7,6 +7,7 @@ struct PlateDetailView: View {
 
     @State private var level = GalenLevel.cheeky
     @State private var carColor: CarColor?
+    @State private var carKind: CarKind?
     @State private var comment = ""
     @State private var newPhoto: UIImage?
     @State private var savedPhoto: UIImage?
@@ -144,6 +145,30 @@ struct PlateDetailView: View {
                     .foregroundStyle(.secondary)
             }
 
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Vilken sorts bil var det?")
+                    .font(.subheadline.weight(.semibold))
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 10) {
+                    ForEach(CarKind.allCases) { option in
+                        Button {
+                            carKind = carKind == option ? nil : option
+                        } label: {
+                            Text(option.emoji)
+                                .font(.system(size: option == carKind ? 34 : 26))
+                                .frame(width: 42, height: 42)
+                                .background(option == carKind ? Galen.yellow.opacity(0.5) : Color.clear, in: Circle())
+                                .opacity(carKind == nil || option == carKind ? 1 : 0.5)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(option.name)
+                    }
+                }
+                .animation(.spring(duration: 0.3), value: carKind)
+                Text(carKind?.name ?? "Tryck på en sorts bil")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             TextField("Vad hände? (valfritt)", text: $comment, axis: .vertical)
 
             Button {
@@ -215,6 +240,7 @@ struct PlateDetailView: View {
             if let mine = summary?.myRating {
                 level = GalenLevel(rawValue: mine.score) ?? .cheeky
                 carColor = CarColor(key: mine.color)
+                carKind = CarKind(key: mine.kind)
                 comment = mine.comment
                 if mine.hasPhoto {
                     savedPhoto = await store.photo(for: plate)
@@ -229,8 +255,9 @@ struct PlateDetailView: View {
         isSaving = true
         defer { isSaving = false }
         let colorsBefore = Set(store.mine.compactMap { CarColor(key: $0.color) })
+        let kindsBefore = Set(store.mine.compactMap { CarKind(key: $0.kind) })
         do {
-            try await store.saveRating(score: level.rawValue, comment: comment, color: carColor, photo: newPhoto, for: plate)
+            try await store.saveRating(score: level.rawValue, comment: comment, color: carColor, kind: carKind, photo: newPhoto, for: plate)
             errorMessage = nil
             if newPhoto != nil {
                 savedPhoto = newPhoto
@@ -238,6 +265,8 @@ struct PlateDetailView: View {
             }
             if let carColor, !colorsBefore.contains(carColor) {
                 celebrate("🎨 Ny färg!\n\(carColor.name) +\(carColor.points) poäng")
+            } else if let carKind, !kindsBefore.contains(carKind) {
+                celebrate("\(carKind.emoji) Ny sorts bil!\n\(carKind.name) +\(carKind.points) poäng")
             } else if level == .galen {
                 celebrate("🤪 GALEN FÖRARE!")
             } else {

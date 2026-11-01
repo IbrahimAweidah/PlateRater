@@ -5,6 +5,7 @@ struct Rating: Identifiable, Decodable, Equatable {
     let score: Int
     let comment: String
     let color: String?
+    let kind: String?
     let hasPhoto: Bool
     let updatedAt: Date
 }
@@ -21,6 +22,7 @@ struct MyRating: Identifiable, Decodable, Equatable {
     let score: Int
     let comment: String
     let color: String?
+    let kind: String?
     let hasPhoto: Bool
     let updatedAt: Date
 
@@ -30,6 +32,33 @@ struct MyRating: Identifiable, Decodable, Equatable {
 struct MyRatings: Decodable {
     let count: Int
     let ratings: [MyRating]
+}
+
+/// You or a friend on the leaderboard. Friends only ever see which colors and kinds of car you found.
+struct Player: Identifiable, Decodable, Equatable {
+    let friendshipId: Int?
+    let name: String
+    let isMe: Bool
+    let cars: Int
+    let colors: [String]
+    let kinds: [String]
+
+    var id: String { isMe ? "me" : "friend-\(friendshipId ?? 0)" }
+    var foundColors: [CarColor] { colors.compactMap { CarColor(key: $0) } }
+    var foundKinds: [CarKind] { kinds.compactMap { CarKind(key: $0) } }
+    var points: Int { HuntScore.points(colors: foundColors, kinds: foundKinds) }
+}
+
+struct FriendRequest: Identifiable, Decodable, Equatable {
+    let id: Int
+    let name: String
+    let email: String?
+}
+
+struct Friends: Decodable {
+    let players: [Player]
+    let incoming: [FriendRequest]
+    let outgoing: [FriendRequest]
 }
 
 enum PlateNumber {

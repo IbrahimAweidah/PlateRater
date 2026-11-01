@@ -54,6 +54,8 @@ api.MapPut("/plates/{plate}/rating", async (string plate, RatingInput input, Cla
     if (comment.Length > 500) return Results.BadRequest(new { error = "Kommentaren är för lång." });
     var color = string.IsNullOrWhiteSpace(input.Color) ? null : input.Color.Trim().ToLowerInvariant();
     if (color != null && !CarColors.All.Contains(color)) return Results.BadRequest(new { error = "Okänd bilfärg." });
+    var kind = string.IsNullOrWhiteSpace(input.Kind) ? null : input.Kind.Trim().ToLowerInvariant();
+    if (kind != null && !CarKinds.All.Contains(kind)) return Results.BadRequest(new { error = "Okänd sorts bil." });
 
     var me = await CurrentUser(principal, db);
     var now = DateTime.UtcNow;
@@ -66,6 +68,7 @@ api.MapPut("/plates/{plate}/rating", async (string plate, RatingInput input, Cla
     rating.Score = input.Score;
     rating.Comment = comment;
     rating.Color = color;
+    rating.Kind = kind;
     rating.UpdatedAt = now;
     await db.SaveChangesAsync();
 
@@ -135,8 +138,94 @@ api.MapGet("/me/ratings", async (ClaimsPrincipal principal, AppDb db) =>
         .ToListAsync();
 
     var ratings = rows.Select(x => new MyRatingDto(
-        x.Rating.Plate, x.Rating.Score, x.Rating.Comment, x.Rating.Color, x.HasPhoto, Utc(x.Rating.UpdatedAt))).ToList();
+        x.Rating.Plate, x.Rating.Score, x.Rating.Comment, x.Rating.Color, x.Rating.Kind, x.HasPhoto, Utc(x.Rating.UpdatedAt))).ToList();
     return Results.Ok(new MyRatingsDto(ratings.Count, ratings));
+});
+
+// Friends: add each other by Google e-mail address and compete in the color and car-kind hunt.
+// A friend only ever sees your first name and which colors and kinds of car you have found,
+// never your plates, ratings, comments or photos.
+api.MapGet("/friends", async (ClaimsPrincipal principal, AppDb db) =>
+{
+    var me = await CurrentUser(principal, db);
+    var links = await db.Friendships
+        .Include(f => f.FromUser)
+        .Include(f => f.ToUser)
+        .Where(f => f.FromUserId == me.Id || f.ToUserId == me.Id)
+        .ToListAsync();
+
+    var friends = links.Where(f => f.Accepted)
+        .Select(f => (Link: f, Friend: f.FromUserId == me.Id ? f.ToUser : f.FromUser))
+        .ToList();
+    var playerIds = friends.Select(x => x.Friend.Id).Append(me.Id).ToList();
+    var found = await db.Ratings
+        .Where(r => playerIds.Contains(r.UserId))
+        .Select(r => new { r.UserId, r.Color, r.Kind })
+        .ToListAsync();
+
+    PlayerDto Player(User user, int? friendshipId)
+    {
+        var rows = found.Where(r => r.UserId == user.Id).ToList();
+        return new PlayerDto(friendshipId, FirstName(user), user.Id == me.Id, rows.Count,
+            rows.Select(r => r.Color).OfType<string>().Distinct().ToList(),
+            rows.Select(r => r.Kind).OfType<string>().Distinct().ToList());
+    }
+
+    var players = friends.Select(x => Player(x.Friend, x.Link.Id)).Append(Player(me, null)).ToList();
+    var incoming = links.Where(f => !f.Accepted && f.ToUserId == me.Id)
+        .Select(f => new FriendRequestDto(f.Id, FirstName(f.FromUser), f.FromUser.Email)).ToList();
+    var outgoing = links.Where(f => !f.Accepted && f.FromUserId == me.Id)
+        .Select(f => new FriendRequestDto(f.Id, FirstName(f.ToUser), f.ToUser.Email)).ToList();
+    return Results.Ok(new FriendsDto(players, incoming, outgoing));
+});
+
+// Sends a friend request. If that person already asked you, this accepts their request instead.
+api.MapPost("/friends", async (FriendInput input, ClaimsPrincipal principal, AppDb db) =>
+{
+    var email = (input.Email ?? "").Trim().ToLowerInvariant();
+    if (email.Length is < 3 or > 320 || !email.Contains('@'))
+        return Results.BadRequest(new { error = "Skriv kompisens e-postadress." });
+
+    var me = await CurrentUser(principal, db);
+    if (me.Email != null && me.Email.ToLower() == email)
+        return Results.BadRequest(new { error = "Du kan inte tävla mot dig själv. 😄" });
+
+    var other = await db.Users.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == email);
+    if (other == null)
+        return Results.BadRequest(new { error = "Hittade ingen Galen-spelare med den adressen. Be kompisen logga in i Galen först." });
+
+    var existing = await db.Friendships.FirstOrDefaultAsync(f =>
+        (f.FromUserId == me.Id && f.ToUserId == other.Id) || (f.FromUserId == other.Id && f.ToUserId == me.Id));
+    if (existing == null)
+    {
+        var waiting = await db.Friendships.CountAsync(f => f.FromUserId == me.Id && !f.Accepted);
+        if (waiting >= 20) return Results.BadRequest(new { error = "Du har för många obesvarade förfrågningar." });
+        db.Friendships.Add(new Friendship { FromUserId = me.Id, ToUserId = other.Id, CreatedAt = DateTime.UtcNow });
+    }
+    else if (!existing.Accepted && existing.ToUserId == me.Id)
+    {
+        existing.Accepted = true;
+    }
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+api.MapPost("/friends/{id:int}/accept", async (int id, ClaimsPrincipal principal, AppDb db) =>
+{
+    var me = await CurrentUser(principal, db);
+    var request = await db.Friendships.SingleOrDefaultAsync(f => f.Id == id && f.ToUserId == me.Id);
+    if (request == null) return Results.NotFound();
+    request.Accepted = true;
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+// Declines a request, takes back your own request, or removes a friend.
+api.MapDelete("/friends/{id:int}", async (int id, ClaimsPrincipal principal, AppDb db) =>
+{
+    var me = await CurrentUser(principal, db);
+    await db.Friendships.Where(f => f.Id == id && (f.FromUserId == me.Id || f.ToUserId == me.Id)).ExecuteDeleteAsync();
+    return Results.NoContent();
 });
 
 app.Run();
@@ -157,6 +246,10 @@ static async Task<User> CurrentUser(ClaimsPrincipal principal, AppDb db)
     return user;
 }
 
+// Friends see only the first name from the Google account.
+static string FirstName(User user) =>
+    user.Name?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Galen-spelare";
+
 static async Task<Rating?> MyRating(string plate, ClaimsPrincipal principal, AppDb db)
 {
     plate = Plates.Normalize(plate);
@@ -165,14 +258,18 @@ static async Task<Rating?> MyRating(string plate, ClaimsPrincipal principal, App
 }
 
 static RatingDto ToDto(Rating r, bool hasPhoto) =>
-    new(r.Id, r.Score, r.Comment, r.Color, hasPhoto, Utc(r.UpdatedAt));
+    new(r.Id, r.Score, r.Comment, r.Color, r.Kind, hasPhoto, Utc(r.UpdatedAt));
 
 // Whole seconds in UTC, so the app gets plain ISO 8601 dates like 2026-10-25T21:00:00Z.
 static DateTime Utc(DateTime value) => new(value.Ticks - value.Ticks % TimeSpan.TicksPerSecond, DateTimeKind.Utc);
 
-record RatingInput(int Score, string? Comment, string? Color);
-record RatingDto(int Id, int Score, string Comment, string? Color, bool HasPhoto, DateTime UpdatedAt);
-record MyRatingDto(string Plate, int Score, string Comment, string? Color, bool HasPhoto, DateTime UpdatedAt);
+record RatingInput(int Score, string? Comment, string? Color, string? Kind);
+record FriendInput(string? Email);
+record PlayerDto(int? FriendshipId, string Name, bool IsMe, int Cars, List<string> Colors, List<string> Kinds);
+record FriendRequestDto(int Id, string Name, string? Email);
+record FriendsDto(List<PlayerDto> Players, List<FriendRequestDto> Incoming, List<FriendRequestDto> Outgoing);
+record RatingDto(int Id, int Score, string Comment, string? Color, string? Kind, bool HasPhoto, DateTime UpdatedAt);
+record MyRatingDto(string Plate, int Score, string Comment, string? Color, string? Kind, bool HasPhoto, DateTime UpdatedAt);
 record MyRatingsDto(int Count, List<MyRatingDto> Ratings);
 
 // The colors the app offers. Keep in sync with CarColor in the iOS app.
@@ -180,6 +277,12 @@ static class CarColors
 {
     public static readonly HashSet<string> All =
         ["white", "black", "grey", "silver", "red", "blue", "green", "yellow", "orange", "brown", "purple", "pink"];
+}
+// The kinds of car for the car-kind hunt. Keep in sync with CarKind in the iOS app.
+static class CarKinds
+{
+    public static readonly HashSet<string> All =
+        ["car", "suv", "van", "truck", "bus", "motorcycle", "taxi", "camper", "tractor", "sports", "vintage", "emergency"];
 }
 record PlateDto(string Plate, RatingDto? MyRating);
 

@@ -103,8 +103,13 @@ struct MyRatingRow: View {
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 4) {
-                if let color = CarColor(key: rating.color) {
-                    ColorDot(color: color, size: 18)
+                HStack(spacing: 4) {
+                    if let kind = CarKind(key: rating.kind) {
+                        Text(kind.emoji).font(.caption)
+                    }
+                    if let color = CarColor(key: rating.color) {
+                        ColorDot(color: color, size: 18)
+                    }
                 }
                 Text(rating.updatedAt, style: .date)
                     .font(.caption2)

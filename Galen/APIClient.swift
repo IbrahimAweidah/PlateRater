@@ -27,13 +27,35 @@ struct APIClient {
         try await decode(send("GET", "api/plates/\(plate)"))
     }
 
-    func saveRating(score: Int, comment: String, color: CarColor?, for plate: String) async throws -> Rating {
-        let body: [String: Any] = ["score": score, "comment": comment, "color": color.map { $0.rawValue as Any } ?? NSNull()]
+    func saveRating(score: Int, comment: String, color: CarColor?, kind: CarKind?, for plate: String) async throws -> Rating {
+        let body: [String: Any] = [
+            "score": score,
+            "comment": comment,
+            "color": color.map { $0.rawValue as Any } ?? NSNull(),
+            "kind": kind.map { $0.rawValue as Any } ?? NSNull(),
+        ]
         return try await decode(send("PUT", "api/plates/\(plate)/rating", json: body))
     }
 
     func myRatings() async throws -> MyRatings {
         try await decode(send("GET", "api/me/ratings"))
+    }
+
+    func friends() async throws -> Friends {
+        try await decode(send("GET", "api/friends"))
+    }
+
+    func addFriend(email: String) async throws {
+        _ = try await send("POST", "api/friends", json: ["email": email])
+    }
+
+    func acceptFriend(_ id: Int) async throws {
+        _ = try await send("POST", "api/friends/\(id)/accept")
+    }
+
+    /// Declines a request, takes back your own request, or removes a friend.
+    func removeFriend(_ id: Int) async throws {
+        _ = try await send("DELETE", "api/friends/\(id)")
     }
 
     /// The photo on your own rating of this plate, or nil if there is none.
