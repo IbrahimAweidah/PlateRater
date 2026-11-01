@@ -29,7 +29,7 @@
 
 ## Where things run
 
-- API: SmarterASP.NET site at https://ibrahimawe-001-site5.ftempurl.com/ (temporary SmarterASP address; https works). Deployed by uploading the output of `dotnet publish -c Release` via FTP. The deployed copy with the real password lives in the git-ignored `PlateRaterAPI/publish/` folder.
+- API: SmarterASP.NET site at https://ibrahimawe-001-site5.ftempurl.com/ (temporary SmarterASP address; https works). Deployed with the GitHub Actions workflow `.github/workflows/deploy-api.yml` (Actions > Deploy API to SmarterASP > Run workflow; builds, uploads over FTPS with app_offline.htm, never touches the server's appsettings.json; needs secrets FTP_HOST, FTP_USER, FTP_PASSWORD, FTP_DIR). Manual fallback: upload the output of `dotnet publish -c Release` via FTP. SmarterASP is shared IIS hosting, no containers. The deployed copy with the real password lives in the git-ignored `PlateRaterAPI/publish/` folder.
 - Database: SmarterASP MSSQL `db_a30625_platerater` on `sql6032.site4now.net`, a database of its own (seen 2026-11-01; earlier the tables lived in `DB_A30625_ibrahimawe` on `sql6018`, shared with Ibrax_1). The API's connection string on the server must point here.
 - Google Cloud project "Ibrax": iOS OAuth client `619027614244-cnrk7d54uq6ah0i55kbooandipf6dl49.apps.googleusercontent.com`, bundle ID `com.ibrahimaweidah.PlateRater`. Consent screen is in Testing; only listed test users can sign in.
 
@@ -57,6 +57,7 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
 
+- 2026-11-01 – Added `.github/workflows/deploy-api.yml` for one-click API deploys from GitHub (secrets must be added by the user).
 - 2026-11-01 – Renamed to **Biljakt** (display name, all UI text, new icon with BILJAKT) and removed the driver rating: no `GalenLevel`, "Mina betyg" is now "Mina bilar", `Score` nullable (`schema-4-biljakt.sql`). Guessing made more sensitive (small text, top 3 OCR candidates, classifier threshold 0.1). Upload zip: project files `platerater/Biljakt-API-upload-2026-11-01.zip`. Kind/brand not being saved was traced to the server still running the old API (check: `/api/friends` gives 401 on the new API, 404 on the old).
 - 2026-11-01 – `schema-3-friends.sql` run on `db_a30625_platerater` (all four tables exist). Next: upload the new API, then build in Xcode.
 - 2026-11-01 – Brand hunt and photo guessing: ratings can have a brand (`CarBrand`, `Ratings.Brand`, 19 brands), Jakt has a Märken tab, brands count on the leaderboard. When a photo is added, `CarGuesser` guesses color, brand and kind on the phone and warns on a mismatch. A real make/model recognizer would need a Core ML model or a paid cloud API; not done.

@@ -1,0 +1,54 @@
+# Builds the API and uploads it to SmarterASP.NET over FTP, so nobody needs .NET locally.
+# Run it from GitHub: Actions > "Deploy API to SmarterASP" > Run workflow (pick the branch).
+#
+# Needs these repository secrets (Settings > Secrets and variables > Actions):
+#   FTP_HOST      e.g. win6xxx.site4now.net (SmarterASP control panel > FTP)
+#   FTP_USER      the FTP user name
+#   FTP_PASSWORD  the FTP password
+#   FTP_DIR       the site folder on the FTP server, e.g. /site5
+#
+# The server's appsettings.json (with the database password) is never touched.
+name: Deploy API to SmarterASP
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build
+        run: |
+          dotnet publish PlateRaterAPI -c Release -o out
+          rm -f out/appsettings.json out/appsettings.Development.json
+
+      - name: Upload over FTP
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ secrets.FTP_DIR }}
+        run: |
+          sudo apt-get install -y -qq lftp
+          # app_offline.htm stops the site while files are replaced, so the DLL isn't locked.
+          echo "<h1>Biljakt uppdateras, prova igen om en minut.</h1>" > app_offline.htm
+          lftp -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST" -e "
+            set ftp:ssl-force true; set net:max-retries 3;
+            cd $FTP_DIR;
+            put app_offline.htm;
+            mirror --reverse --verbose --parallel=4 --exclude-glob appsettings*.json out .;
+            rm app_offline.htm;
+            bye"
+
+      - name: Check the new API is running
+        run: |
+          sleep 10
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://ibrahimawe-001-site5.ftempurl.com/api/friends)
+          echo "GET /api/friends -> $status (401 means the new API is running)"
+          test "$status" = "401"
