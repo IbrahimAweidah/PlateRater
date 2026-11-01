@@ -36,7 +36,7 @@
 ## Status
 
 - The original API is deployed and the first Xcode build succeeded.
-- schema-2 and schema-3 are run; schema-4 and the Biljakt API upload are pending (as of 2026-11-01 13:30). The API compiles; the Swift code after the rename has not been compiled yet.
+- schema-2 and schema-3 are run; the Biljakt API was deployed 2026-11-01 13:42 UTC by the GitHub Actions workflow (check passed: /api/friends → 401). schema-4 must be run (user was asked). The Swift code after the rename has not been compiled yet.
 - No free API gives Swedish vehicle data (make/model/color) by plate; Transportstyrelsen and the commercial options (biluppgifter.se, car.info, tic.io, minbilkoll.se) need an agreement or a paid plan.
 
 ## Branches
@@ -57,6 +57,7 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
 
+- 2026-11-01 – First automatic deploy via GitHub Actions succeeded (FTP secrets set; deploys on push to PlateRaterAPI/ on main or the Biljakt branch).
 - 2026-11-01 – Full rename Galen → Biljakt in code: `Biljakt.xcodeproj`, `Biljakt/` folder, target/module Biljakt, `BiljaktApp`, `AppStyle`, `BiljaktLogo`. Added "En produkt av Ibrax AB" and copyright © 2026 Ibrax AB.
 - 2026-11-01 – Added `.github/workflows/deploy-api.yml` for one-click API deploys from GitHub (secrets must be added by the user).
 - 2026-11-01 – Renamed to **Biljakt** (display name, all UI text, new icon with BILJAKT) and removed the driver rating: no `GalenLevel`, "Mina betyg" is now "Mina bilar", `Score` nullable (`schema-4-biljakt.sql`). Guessing made more sensitive (small text, top 3 OCR candidates, classifier threshold 0.1). Upload zip: project files `platerater/Biljakt-API-upload-2026-11-01.zip`. Kind/brand not being saved was traced to the server still running the old API (check: `/api/friends` gives 401 on the new API, 404 on the old).
