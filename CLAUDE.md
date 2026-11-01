@@ -1,10 +1,10 @@
-# Biljakt (repo PlateRater)
+# Biljakt
 
-**Biljakt** (formerly Galen): a kid-friendly Swedish iOS app (SwiftUI, iOS 17) where you spot cars by Swedish license plate and hunt colors, kinds and brands with friends, plus an ASP.NET Core 8 API that stores your finds. There is no driver rating any more (removed 2026-11-01). Everything is named Biljakt: Xcode project `Biljakt.xcodeproj`, target/scheme/module `Biljakt`, folder `Biljakt/`, theme enum `AppStyle`. The GitHub repo, API project and database tables keep the PlateRater name. The app is a product of **Ibrax AB** (shown on splash, sign-in, profile menu, and as the copyright in Info.plist).
+**Biljakt** (formerly Galen): a kid-friendly Swedish iOS app (SwiftUI, iOS 17) where you spot cars by Swedish license plate and hunt colors, kinds and brands with friends, plus an ASP.NET Core 8 API that stores your finds. There is no driver rating any more (removed 2026-11-01). Everything is named Biljakt: Xcode project `Biljakt.xcodeproj`, target/scheme/module `Biljakt`, folder `Biljakt/`, theme enum `AppStyle`. The API project is `BiljaktAPI/` and the database tables are `Biljakt*`. Still named PlateRater (can't change from code): the GitHub repo name, the iOS bundle ID `com.ibrahimaweidah.PlateRater` (tied to the Google OAuth client) and the database name `db_a30625_platerater`. The app is a product of **Ibrax AB** (shown on splash, sign-in, profile menu, and as the copyright in Info.plist).
 
 ## Layout
 
-- `Biljakt/` – the iOS app (target and scheme `Biljakt`, entry point `BiljaktApp.swift` with a splash screen). Open `Biljakt.xcodeproj` in Xcode to build and run. The GitHub repo, API and database tables keep the PlateRater name.
+- `Biljakt/` – the iOS app (target and scheme `Biljakt`, entry point `BiljaktApp.swift` with a splash screen). Open `Biljakt.xcodeproj` in Xcode to build and run.
   - `Assets.xcassets` – `AppIcon` and `BiljaktLogo` (same 1024px image), pink `AccentColor`.
   - `AuthManager.swift` – Google sign-in (GoogleSignIn-iOS 8.x via Swift Package Manager).
   - `APIClient.swift` – calls the API with the Google ID token as a bearer token.
@@ -14,12 +14,10 @@
   - `Theme.swift` – colors and fonts (`AppStyle`), `CarColor`, `CarKind` and `CarBrand` (keys must match `CarColors`, `CarKinds` and `CarBrands` in the API), `HuntScore`, `SpotterRank`.
   - UI text is Swedish. Bundle ID stays `com.ibrahimaweidah.PlateRater` (Google OAuth client is tied to it); display name is Biljakt.
   - `Config.xcconfig` – `GOOGLE_CLIENT_ID`, `GOOGLE_REVERSED_CLIENT_ID`, `API_BASE_URL`, fed into `Info.plist`. In xcconfig `//` starts a comment, so URLs are written `https:/$()/host/`.
-- `PlateRaterAPI/` – ASP.NET Core 8 minimal API (`Program.cs`, `AppDb.cs`), EF Core with SQL Server.
-  - `schema.sql` – creates `PlateRaterUsers` and `PlateRaterRatings`. Already run on the production database.
-  - `schema-2-galen.sql` – adds `Color` to ratings and the `PlateRaterPhotos` table. Must run before deploying the Galen API.
-  - `schema-3-friends.sql` – adds `Kind` and `Brand` to ratings and the `PlateRaterFriendships` table. Already run.
-  - `schema-4-biljakt.sql` – makes `Score` nullable (no driver rating). Run before deploying the Biljakt API.
-  - `appsettings.json` – connection string has a `YOUR-DB-PASSWORD` placeholder. Never commit the real password.
+- `BiljaktAPI/` – ASP.NET Core 8 minimal API (`Program.cs`, `AppDb.cs`, builds `BiljaktAPI.dll`), EF Core with SQL Server.
+  - `schema.sql` – the whole schema (`BiljaktUsers`, `BiljaktRatings`, `BiljaktPhotos`, `BiljaktFriendships`) for a fresh database.
+  - `migrate-to-biljakt.sql` – one-time migration of the production database from the old `PlateRater*` tables: renames tables and constraints, makes `Score` nullable, adds `PlateRater*` synonyms so an older API keeps working.
+  - `appsettings.json` – connection string `Biljakt` with a `YOUR-DB-PASSWORD` placeholder. Never commit the real password. The server's own appsettings.json still names the connection string `PlateRater`; Program.cs reads `Biljakt` and falls back to `PlateRater`.
 - `SETUP.md` – step-by-step setup guide.
 
 ## How it fits together
@@ -29,19 +27,19 @@
 
 ## Where things run
 
-- API: SmarterASP.NET site at https://ibrahimawe-001-site5.ftempurl.com/ (temporary SmarterASP address; https works). Deployed with the GitHub Actions workflow `.github/workflows/deploy-api.yml` (runs on every push that changes PlateRaterAPI/ on main or the Biljakt branch, or Actions > Deploy API to SmarterASP > Run workflow; builds, uploads over FTPS with app_offline.htm, never touches the server's appsettings.json; needs secrets FTP_HOST, FTP_USER, FTP_PASSWORD, FTP_DIR). Manual fallback: upload the output of `dotnet publish -c Release` via FTP. SmarterASP is shared IIS hosting, no containers. The deployed copy with the real password lives in the git-ignored `PlateRaterAPI/publish/` folder.
+- API: SmarterASP.NET site at https://ibrahimawe-001-site5.ftempurl.com/ (temporary SmarterASP address; https works). Deployed with the GitHub Actions workflow `.github/workflows/deploy-api.yml` (runs on every push that changes BiljaktAPI/ on main or the Biljakt branch, or Actions > Deploy API to SmarterASP > Run workflow; builds, uploads over FTPS with app_offline.htm, never touches the server's appsettings.json; needs secrets FTP_HOST, FTP_USER, FTP_PASSWORD, FTP_DIR). Manual fallback: upload the output of `dotnet publish -c Release` via FTP. SmarterASP is shared IIS hosting, no containers. The deployed copy with the real password lives in the git-ignored `publish/` folder of the old `PlateRaterAPI/` on the Mac.
 - Database: SmarterASP MSSQL `db_a30625_platerater` on `sql6032.site4now.net`, a database of its own (seen 2026-11-01; earlier the tables lived in `DB_A30625_ibrahimawe` on `sql6018`, shared with Ibrax_1). The API's connection string on the server must point here.
 - Google Cloud project "Ibrax": iOS OAuth client `619027614244-cnrk7d54uq6ah0i55kbooandipf6dl49.apps.googleusercontent.com`, bundle ID `com.ibrahimaweidah.PlateRater`. Consent screen is in Testing; only listed test users can sign in.
 
 ## Status
 
 - The original API is deployed and the first Xcode build succeeded.
-- schema-2 and schema-3 are run; the Biljakt API was deployed 2026-11-01 13:42 UTC by the GitHub Actions workflow (check passed: /api/friends → 401). schema-4 must be run (user was asked). The Swift code after the rename has not been compiled yet.
+- schema-2 and schema-3 are run; the Biljakt API was deployed 2026-11-01 13:42 UTC by the GitHub Actions workflow (check passed: /api/friends → 401). `migrate-to-biljakt.sql` must be run before `AppDb.cs` switches to the `Biljakt*` table names (user was asked 2026-11-01). The Swift code after the rename has not been compiled yet.
 - No free API gives Swedish vehicle data (make/model/color) by plate; Transportstyrelsen and the commercial options (biluppgifter.se, car.info, tic.io, minbilkoll.se) need an agreement or a paid plan.
 
 ## Branches
 
-- `main` – the original PlateRater app with the backend.
+- `main` – the original app (then called PlateRater) with the backend.
 - `claude/project-thread-m1xtn2` (PR #1) – Galen rebrand: colors, photos, Mina betyg, color hunt, plate OCR, icon and splash.
 - `claude/project-thread-y1essk` (PR #2) – built on PR #1: Biljakt rename, no driver rating, private ratings, car-kind and brand hunt, photo guessing, friends and leaderboard. Merge PR #1 first.
 
@@ -57,6 +55,7 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
 
+- 2026-11-01 – Renamed the rest to Biljakt: `PlateRaterAPI/` → `BiljaktAPI/` (BiljaktAPI.dll, namespace BiljaktAPI), Info.plist key `BiljaktAPIBaseURL`, connection string `Biljakt` (falls back to `PlateRater`), new `schema.sql` with `Biljakt*` tables and `migrate-to-biljakt.sql`; old schema-2/3/4 scripts removed (schema-4 would have failed: a CHECK constraint blocks ALTER COLUMN).
 - 2026-11-01 – First automatic deploy via GitHub Actions succeeded (FTP secrets set; deploys on push to PlateRaterAPI/ on main or the Biljakt branch).
 - 2026-11-01 – Full rename Galen → Biljakt in code: `Biljakt.xcodeproj`, `Biljakt/` folder, target/module Biljakt, `BiljaktApp`, `AppStyle`, `BiljaktLogo`. Added "En produkt av Ibrax AB" and copyright © 2026 Ibrax AB.
 - 2026-11-01 – Added `.github/workflows/deploy-api.yml` for one-click API deploys from GitHub (secrets must be added by the user).

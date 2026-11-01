@@ -14,12 +14,12 @@ enum APIError: LocalizedError {
     }
 }
 
-/// Talks to PlateRaterAPI. The base URL comes from PlateRaterAPIBaseURL in Info.plist (set in Config.xcconfig).
+/// Talks to BiljaktAPI. The base URL comes from BiljaktAPIBaseURL in Info.plist (set in Config.xcconfig).
 struct APIClient {
     let auth: AuthManager
 
     private var baseURL: URL {
-        let value = Bundle.main.object(forInfoDictionaryKey: "PlateRaterAPIBaseURL") as? String ?? ""
+        let value = Bundle.main.object(forInfoDictionaryKey: "BiljaktAPIBaseURL") as? String ?? ""
         return URL(string: value)!
     }
 

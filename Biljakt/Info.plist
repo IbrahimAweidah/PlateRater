@@ -4,7 +4,7 @@
 <dict>
 	<key>GIDClientID</key>
 	<string>$(GOOGLE_CLIENT_ID)</string>
-	<key>PlateRaterAPIBaseURL</key>
+	<key>BiljaktAPIBaseURL</key>
 	<string>$(API_BASE_URL)</string>
 	<key>CFBundleURLTypes</key>
 	<array>

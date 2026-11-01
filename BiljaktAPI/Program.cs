@@ -2,11 +2,11 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using PlateRaterAPI;
+using BiljaktAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDb>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("PlateRater")));
+builder.Services.AddDbContext<AppDb>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("Biljakt") ?? builder.Configuration.GetConnectionString("PlateRater")));
 
 // The iOS app signs in with Google and sends the Google ID token as a bearer token.
 // It is checked against Google's signing keys and must be issued for one of our client IDs.

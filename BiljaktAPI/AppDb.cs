@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace PlateRaterAPI;
+namespace BiljaktAPI;
 
 public class User
 {

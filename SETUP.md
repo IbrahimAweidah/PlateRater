@@ -1,82 +1,28 @@
-# PlateRater: database and Google sign-in setup
+# Biljakt setup
 
-The app now signs in with Google and stores ratings on your server. There are four steps to switch it on.
+Biljakt is an iOS app (`Biljakt/`, open `Biljakt.xcodeproj`) and an ASP.NET Core 8 API (`BiljaktAPI/`) on SmarterASP.NET with an MSSQL database. A product of Ibrax AB.
 
-## 1. Create the iOS sign-in client in Google Cloud
+## Database
 
-1. Open https://console.cloud.google.com/apis/credentials. You can reuse the project you already use for Ibrax's Google login.
-2. Click **Create credentials > OAuth client ID** and choose **iOS** as the application type.
-3. Enter the bundle ID `com.ibrahimaweidah.PlateRater` and click **Create**.
-4. Copy the **Client ID** and the **iOS URL scheme** that Google shows you.
-5. If the OAuth consent screen is in **Testing** mode, add every Google account that should be able to sign in as a test user.
+- New, empty database: run `BiljaktAPI/schema.sql` in Web SQL Manager (SmarterASP Control Panel > Databases > MSSQL).
+- The production database `db_a30625_platerater` had the old `PlateRater*` tables. Run `BiljaktAPI/migrate-to-biljakt.sql` once to rename them to `Biljakt*`.
 
-## 2. Create the tables in your SmarterASP.NET database
+## API
 
-1. In the SmarterASP.NET control panel, go to **Databases > MSSQL** and open **Web SQL Manager** for `DB_A30625_ibrahimawe`. You can also connect with Azure Data Studio or SSMS.
-2. Run `PlateRaterAPI/schema.sql`. It adds two new tables, `PlateRaterUsers` and `PlateRaterRatings`, and doesn't change your existing tables.
+Deploys itself: every push that changes `BiljaktAPI/` on `main` or the Biljakt branch runs the GitHub Actions workflow **Deploy API to SmarterASP**. It builds the API, takes the site offline with `app_offline.htm`, uploads over FTPS, never touches the server's `appsettings.json`, and checks that `/api/friends` answers 401. It needs the repository secrets `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` and `FTP_DIR`. You can also start it by hand under Actions > Deploy API to SmarterASP > Run workflow.
 
-## 3. Publish the API to SmarterASP.NET
+The server's `appsettings.json` holds the real connection string (named `Biljakt`, or the older name `PlateRater`) and `Google:ClientIds`. Never commit the real password.
 
-1. Install the .NET 8 SDK on your Mac: https://dotnet.microsoft.com/download/dotnet/8.0
-2. Build the API:
-   ```
-   cd ~/Developer/PlateRater/PlateRaterAPI
-   dotnet publish -c Release -o publish
-   ```
-3. Edit `publish/appsettings.json`:
-   - Replace `YOUR-DB-PASSWORD` with your database password.
-   - Replace `YOUR-IOS-CLIENT-ID.apps.googleusercontent.com` with the Client ID from step 1.
+## App
 
-   Keep the password only in the `publish` copy so it never ends up in GitHub.
-4. In the SmarterASP.NET control panel, add a website or subdomain for the API (for example `api.yourdomain.com`), and set it to run **ASP.NET Core / .NET 8**.
-5. Upload everything inside the `publish` folder to that site's root, using FTP, Web Deploy, or the File Manager.
-6. Turn on SSL for the site. iOS only connects to `https://` addresses, and SmarterASP.NET offers a free certificate for a domain you own.
-7. Open `https://YOUR-API-ADDRESS/` in a browser. You should see **PlateRater API is running.**
+1. `git pull`, open `Biljakt.xcodeproj`.
+2. Signing & Capabilities: pick your Team.
+3. Pick your iPhone and press Cmd-R. The first time, turn on Developer Mode on the phone and trust the developer.
 
-## 4. Point the app at Google and the API
+`Biljakt/Config.xcconfig` holds `GOOGLE_CLIENT_ID`, `GOOGLE_REVERSED_CLIENT_ID` and `API_BASE_URL` (written `https:/$()/host/`, because `//` starts a comment in xcconfig).
 
-1. Open `Galen/Config.xcconfig` and fill in:
-   - `GOOGLE_CLIENT_ID`: the Client ID from step 1.
-   - `GOOGLE_REVERSED_CLIENT_ID`: the iOS URL scheme from step 1.
-   - `API_BASE_URL`: your API address. Keep the `https:/$()/` part exactly as written, because xcconfig treats `//` as the start of a comment.
-2. Open `Biljakt.xcodeproj`. Xcode downloads the GoogleSignIn package the first time.
-3. Run the app. It shows a Google sign-in screen first. After you sign in, ratings load from and save to the server.
+## What the app does
 
-## How it works
-
-- The app gets a Google ID token from Google's sign-in SDK and sends it with every request.
-- The API checks the token's signature against Google's keys and checks that it was issued for your iOS client ID. Requests without a valid token get a 401.
-- On first sign-in, each Google account gets a row in `PlateRaterUsers`. Each account has one rating per plate, and rating the same plate again updates it.
-- Ratings are private. You only see your own ratings, comments and photos; nobody else's are ever sent to the app.
-
-Your original app files are backed up in `_backup-before-backend/`.
-
-## Galen update (colors, photos, "Mina betyg")
-
-The app is now called **Galen**. Ratings have a car color and an optional photo, and there are new tabs for your own ratings and the color hunt. Do these in this order:
-
-1. **Database first.** In Web SQL Manager for `DB_A30625_ibrahimawe`, run `PlateRaterAPI/schema-2-galen.sql`, then `PlateRaterAPI/schema-3-friends.sql`. Together they add `Color` and `Kind` columns to `PlateRaterRatings` and new `PlateRaterPhotos` and `PlateRaterFriendships` tables. The API that is running now keeps working after this.
-2. **Then the API.** Rebuild and upload:
-   ```
-   cd ~/Developer/PlateRater/PlateRaterAPI
-   dotnet publish -c Release -o publish/upload
-   ```
-   Upload everything in `publish/upload` **except `appsettings.json`**, so the copy on the server with the real password stays as it is. Open the site afterwards; it should say **Galen API is running.**
-3. **Then the app.** Pull, open `Biljakt.xcodeproj`, build and run. You should see a pink Galen start screen with "Version 2.0".
-
-Photos are stored in the database (scaled down to about 200–400 KB each) and only the person who took a photo can see it.
-
-### Private ratings, car kinds and friends
-
-- Ratings, comments and photos are private: the API only returns your own.
-- A rating can have a kind of car (Lastbil, Traktor, Sportbil …) and a brand (Volvo, Tesla, Porsche …). The **Jakt** tab has a color, car-kind and brand hunt; each one you find gives points once.
-- When you add a photo, Galen guesses the color, the brand (from the text on the car) and the kind of car, on the phone, and tells you if the photo doesn't match what you picked. Check the guess and change it if it is wrong.
-- The **Tävla** tab: add a friend with the e-mail address of their Google account. They must have signed in to Galen once and must say yes. Friends see each other's first name, points and which colors, kinds and brands they found, never plates, ratings or photos.
-
-### Biljakt (new name, no driver rating)
-
-The app is now called **Biljakt**, and you no longer rate the driver. A find is the plate plus color, kind, brand, an optional note and an optional photo.
-
-1. Run `PlateRaterAPI/schema-4-biljakt.sql` in `db_a30625_platerater`.
-2. Upload the contents of `Biljakt-API-upload-2026-11-01.zip` (no `appsettings.json` inside). If the server keeps running the old code, stop the site in the SmarterASP panel, upload, and start it again. Check: `/api/friends` in a browser should give 401, not 404.
-3. Build in Xcode.
+- Spana: type or photograph a plate. Pick color, kind and brand; Biljakt guesses them from the photo on the phone and warns if the photo doesn't match.
+- Mina bilar: everything you have found. Jakt: color, kind and brand hunts with points. Tävla: add friends by Google e-mail and compete on a leaderboard.
+- Everything is private. Friends only see your first name, your points and which colors, kinds and brands you found.
