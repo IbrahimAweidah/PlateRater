@@ -271,9 +271,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Galen/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Galen;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Galen använder kameran så att du kan fota bilar du betygsätter.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Galen sparar dina bilfoton i Bilder när du ber om det.";
+				INFOPLIST_KEY_CFBundleDisplayName = Biljakt;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Biljakt använder kameran så att du kan fota bilar du hittar.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Biljakt sparar dina bilfoton i Bilder när du ber om det.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -304,9 +304,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Galen/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Galen;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Galen använder kameran så att du kan fota bilar du betygsätter.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Galen sparar dina bilfoton i Bilder när du ber om det.";
+				INFOPLIST_KEY_CFBundleDisplayName = Biljakt;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Biljakt använder kameran så att du kan fota bilar du hittar.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Biljakt sparar dina bilfoton i Bilder när du ber om det.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

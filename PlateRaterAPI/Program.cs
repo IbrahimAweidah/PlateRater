@@ -25,7 +25,7 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/", () => "Galen API is running.");
+app.MapGet("/", () => "Biljakt API is running.");
 
 var api = app.MapGroup("/api").RequireAuthorization();
 
@@ -49,6 +49,7 @@ api.MapPut("/plates/{plate}/rating", async (string plate, RatingInput input, Cla
 {
     plate = Plates.Normalize(plate);
     if (!Plates.IsValid(plate)) return Results.BadRequest(new { error = "Ogiltig registreringsskylt." });
+    // The driver score is no longer used by the app (Biljakt). Old clients may still send one.
     if (input.Score is < 1 or > 5) return Results.BadRequest(new { error = "Betyget måste vara 1 till 5." });
     var comment = (input.Comment ?? "").Trim();
     if (comment.Length > 500) return Results.BadRequest(new { error = "Kommentaren är för lång." });
@@ -96,7 +97,7 @@ api.MapPut("/plates/{plate}/rating/photo", async (string plate, HttpRequest requ
         return Results.BadRequest(new { error = "Bilden är för stor." });
 
     var rating = await MyRating(plate, principal, db);
-    if (rating == null) return Results.NotFound(new { error = "Betygsätt bilen innan du lägger till en bild." });
+    if (rating == null) return Results.NotFound(new { error = "Spara bilen innan du lägger till en bild." });
 
     using var buffer = new MemoryStream();
     await request.Body.CopyToAsync(buffer);
@@ -196,7 +197,7 @@ api.MapPost("/friends", async (FriendInput input, ClaimsPrincipal principal, App
 
     var other = await db.Users.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == email);
     if (other == null)
-        return Results.BadRequest(new { error = "Hittade ingen Galen-spelare med den adressen. Be kompisen logga in i Galen först." });
+        return Results.BadRequest(new { error = "Hittade ingen Biljakt-spelare med den adressen. Be kompisen logga in i Biljakt först." });
 
     var existing = await db.Friendships.FirstOrDefaultAsync(f =>
         (f.FromUserId == me.Id && f.ToUserId == other.Id) || (f.FromUserId == other.Id && f.ToUserId == me.Id));
@@ -252,7 +253,7 @@ static async Task<User> CurrentUser(ClaimsPrincipal principal, AppDb db)
 
 // Friends see only the first name from the Google account.
 static string FirstName(User user) =>
-    user.Name?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Galen-spelare";
+    user.Name?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Biljakt-spelare";
 
 static async Task<Rating?> MyRating(string plate, ClaimsPrincipal principal, AppDb db)
 {
@@ -267,13 +268,13 @@ static RatingDto ToDto(Rating r, bool hasPhoto) =>
 // Whole seconds in UTC, so the app gets plain ISO 8601 dates like 2026-10-25T21:00:00Z.
 static DateTime Utc(DateTime value) => new(value.Ticks - value.Ticks % TimeSpan.TicksPerSecond, DateTimeKind.Utc);
 
-record RatingInput(int Score, string? Comment, string? Color, string? Kind, string? Brand);
+record RatingInput(int? Score, string? Comment, string? Color, string? Kind, string? Brand);
 record FriendInput(string? Email);
 record PlayerDto(int? FriendshipId, string Name, bool IsMe, int Cars, List<string> Colors, List<string> Kinds, List<string> Brands);
 record FriendRequestDto(int Id, string Name, string? Email);
 record FriendsDto(List<PlayerDto> Players, List<FriendRequestDto> Incoming, List<FriendRequestDto> Outgoing);
-record RatingDto(int Id, int Score, string Comment, string? Color, string? Kind, string? Brand, bool HasPhoto, DateTime UpdatedAt);
-record MyRatingDto(string Plate, int Score, string Comment, string? Color, string? Kind, string? Brand, bool HasPhoto, DateTime UpdatedAt);
+record RatingDto(int Id, int? Score, string Comment, string? Color, string? Kind, string? Brand, bool HasPhoto, DateTime UpdatedAt);
+record MyRatingDto(string Plate, int? Score, string Comment, string? Color, string? Kind, string? Brand, bool HasPhoto, DateTime UpdatedAt);
 record MyRatingsDto(int Count, List<MyRatingDto> Ratings);
 
 // The colors the app offers. Keep in sync with CarColor in the iOS app.

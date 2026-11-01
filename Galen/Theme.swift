@@ -1,54 +1,12 @@
 import SwiftUI
 
-/// The Galen look: bright colors, rounded fonts, and silly names for every score.
+/// The Biljakt look: bright colors and rounded fonts. (The enum keeps its old name Galen.)
 enum Galen {
     static let pink = Color(red: 1.0, green: 0.27, blue: 0.55)
     static let yellow = Color(red: 1.0, green: 0.82, blue: 0.1)
     static let blue = Color(red: 0.0, green: 0.32, blue: 0.65)
 
     static func title(_ size: CGFloat) -> Font { .system(size: size, weight: .heavy, design: .rounded) }
-}
-
-/// How crazy a driver is. 1 is calm as a snail, 5 is "Galen förare".
-enum GalenLevel: Int, CaseIterable, Identifiable {
-    case snail = 1, sundayDriver, cheeky, turbo, galen
-
-    var id: Int { rawValue }
-
-    var emoji: String {
-        switch self {
-        case .snail: "🐌"
-        case .sundayDriver: "🐢"
-        case .cheeky: "🐒"
-        case .turbo: "🐰"
-        case .galen: "🤪"
-        }
-    }
-
-    var name: String {
-        switch self {
-        case .snail: "Snigelfart"
-        case .sundayDriver: "Söndagsåkare"
-        case .cheeky: "Lite busig"
-        case .turbo: "Turbokanin"
-        case .galen: "Galen förare!"
-        }
-    }
-
-    var blurb: String {
-        switch self {
-        case .snail: "Lugn som en snigel på semester."
-        case .sundayDriver: "Tar det lugnt och njuter av utsikten."
-        case .cheeky: "Lite för glad på gasen ibland."
-        case .turbo: "Hoppar fram i trafiken som en kanin."
-        case .galen: "Helt galet! Håll i hatten!"
-        }
-    }
-
-    /// The closest level for an average score such as 3.6.
-    init(average: Double) {
-        self = GalenLevel(rawValue: min(5, max(1, Int(average.rounded())))) ?? .cheeky
-    }
 }
 
 /// Car colors for the color hunt. The raw values are what the API stores.
@@ -269,14 +227,14 @@ struct PlateBadge: View {
     }
 }
 
-/// A title earned by rating more cars.
+/// A title earned by finding more cars.
 enum SpotterRank {
     static func title(for count: Int) -> String {
         switch count {
         case 0..<5: "🐣 Nybörjarspanare"
         case 5..<20: "🔎 Bilspanare"
         case 20..<50: "🕵️ Mästerspanare"
-        default: "🤪 Galen spanare"
+        default: "🏆 Biljaktsmästare"
         }
     }
 

@@ -1,6 +1,6 @@
-# Galen (repo PlateRater)
+# Biljakt (repo PlateRater)
 
-**Galen**: a funny, kid-friendly Swedish iOS app (SwiftUI, iOS 17) for rating how crazy drivers are by Swedish license plate, plus an ASP.NET Core 8 API that stores the ratings.
+**Biljakt** (formerly Galen): a kid-friendly Swedish iOS app (SwiftUI, iOS 17) where you spot cars by Swedish license plate and hunt colors, kinds and brands with friends, plus an ASP.NET Core 8 API that stores your finds. There is no driver rating any more (removed 2026-11-01). Code, folders, the Xcode project/target and the `Galen` theme enum still use the old name Galen; only user-visible text says Biljakt.
 
 ## Layout
 
@@ -8,23 +8,24 @@
   - `Assets.xcassets` – `AppIcon` and `GalenLogo` (same 1024px image), pink `AccentColor`.
   - `AuthManager.swift` – Google sign-in (GoogleSignIn-iOS 8.x via Swift Package Manager).
   - `APIClient.swift` – calls the API with the Google ID token as a bearer token.
-  - `RatingStore.swift`, `PlateDetailView.swift`, `ContentView.swift` (tabs: Spana, Mina betyg, Jakt, Tävla), `MyRatingsView.swift`, `ColorHuntView.swift` (Jakt: colors, car kinds and brands), `FriendsView.swift` (friends and leaderboard), `SignInView.swift` – UI and state.
+  - `RatingStore.swift`, `PlateDetailView.swift`, `ContentView.swift` (tabs: Spana, Mina bilar, Jakt, Tävla), `MyRatingsView.swift`, `ColorHuntView.swift` (Jakt: colors, car kinds and brands), `FriendsView.swift` (friends and leaderboard), `SignInView.swift` – UI and state.
   - `PlateScanner.swift` – reads the plate from a photo on the device (Apple Vision text recognition, no server, free). Used by "Fota skylten" on the Spana tab; the photo is then attached to the rating.
   - `CarGuesser.swift` – guesses color (car cut out with Vision foreground mask, pixels vote for a `CarColor`), brand (text on the car via Vision OCR) and kind (Vision image classifier) from the rating photo, on the device. Fills empty fields and warns when the photo doesn't match what the user picked.
-  - `Theme.swift` – Galen colors, `GalenLevel` (1 🐌 Snigelfart … 5 🤪 Galen förare), `CarColor`, `CarKind` and `CarBrand` (keys must match `CarColors`, `CarKinds` and `CarBrands` in the API), `HuntScore`, `SpotterRank`.
-  - UI text is Swedish. Bundle ID stays `com.ibrahimaweidah.PlateRater` (Google OAuth client is tied to it); display name is Galen.
+  - `Theme.swift` – colors (`Galen` enum), `CarColor`, `CarKind` and `CarBrand` (keys must match `CarColors`, `CarKinds` and `CarBrands` in the API), `HuntScore`, `SpotterRank`.
+  - UI text is Swedish. Bundle ID stays `com.ibrahimaweidah.PlateRater` (Google OAuth client is tied to it); display name is Biljakt.
   - `Config.xcconfig` – `GOOGLE_CLIENT_ID`, `GOOGLE_REVERSED_CLIENT_ID`, `API_BASE_URL`, fed into `Info.plist`. In xcconfig `//` starts a comment, so URLs are written `https:/$()/host/`.
 - `PlateRaterAPI/` – ASP.NET Core 8 minimal API (`Program.cs`, `AppDb.cs`), EF Core with SQL Server.
   - `schema.sql` – creates `PlateRaterUsers` and `PlateRaterRatings`. Already run on the production database.
   - `schema-2-galen.sql` – adds `Color` to ratings and the `PlateRaterPhotos` table. Must run before deploying the Galen API.
-  - `schema-3-friends.sql` – adds `Kind` and `Brand` to ratings and the `PlateRaterFriendships` table. Run after schema-2, before deploying.
+  - `schema-3-friends.sql` – adds `Kind` and `Brand` to ratings and the `PlateRaterFriendships` table. Already run.
+  - `schema-4-biljakt.sql` – makes `Score` nullable (no driver rating). Run before deploying the Biljakt API.
   - `appsettings.json` – connection string has a `YOUR-DB-PASSWORD` placeholder. Never commit the real password.
 - `SETUP.md` – step-by-step setup guide.
 
 ## How it fits together
 
 - The app signs in with Google and sends the ID token on every request. The API validates it against Google's keys (JwtBearer, authority `https://accounts.google.com`, audience = the iOS client ID in `Google:ClientIds`).
-- Endpoints: `GET /api/plates/{plate}`, `PUT /api/plates/{plate}/rating` (`{score, comment, color}`), `DELETE /api/plates/{plate}/rating`, `PUT|GET|DELETE /api/plates/{plate}/rating/photo` (raw JPEG/PNG body, max 3 MB), `GET /api/me/ratings`, `GET|POST /api/friends` (`{email}`), `POST /api/friends/{id}/accept`, `DELETE /api/friends/{id}`. One rating per Google account per plate. Ratings are private: every endpoint returns only the signed-in user's own ratings, comments and photos, never anyone else's (decided 2026-11-01 after a legal review, to keep personal data about car owners from being shown to others). Friends, added by Google e-mail and accepted by the other side, see only each other's first name and which colors, kinds and brands of car they found.
+- Endpoints: `GET /api/plates/{plate}`, `PUT /api/plates/{plate}/rating` (`{comment, color, kind, brand}`; `score` optional and unused by the app), `DELETE /api/plates/{plate}/rating`, `PUT|GET|DELETE /api/plates/{plate}/rating/photo` (raw JPEG/PNG body, max 3 MB), `GET /api/me/ratings`, `GET|POST /api/friends` (`{email}`), `POST /api/friends/{id}/accept`, `DELETE /api/friends/{id}`. One rating per Google account per plate. Ratings are private: every endpoint returns only the signed-in user's own ratings, comments and photos, never anyone else's (decided 2026-11-01 after a legal review, to keep personal data about car owners from being shown to others). Friends, added by Google e-mail and accepted by the other side, see only each other's first name and which colors, kinds and brands of car they found.
 
 ## Where things run
 
@@ -42,7 +43,7 @@
 
 - `main` – the original PlateRater app with the backend.
 - `claude/project-thread-m1xtn2` (PR #1) – Galen rebrand: colors, photos, Mina betyg, color hunt, plate OCR, icon and splash.
-- `claude/project-thread-y1essk` – built on PR #1: private ratings, car-kind and brand hunt, photo guessing, friends and leaderboard. Merge PR #1 first.
+- `claude/project-thread-y1essk` (PR #2) – built on PR #1: Biljakt rename, no driver rating, private ratings, car-kind and brand hunt, photo guessing, friends and leaderboard. Merge PR #1 first.
 
 ## Legal review (2026-11-01)
 
@@ -56,6 +57,7 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
 
+- 2026-11-01 – Renamed to **Biljakt** (display name, all UI text, new icon with BILJAKT) and removed the driver rating: no `GalenLevel`, "Mina betyg" is now "Mina bilar", `Score` nullable (`schema-4-biljakt.sql`). Guessing made more sensitive (small text, top 3 OCR candidates, classifier threshold 0.1). Upload zip: project files `platerater/Biljakt-API-upload-2026-11-01.zip`. Kind/brand not being saved was traced to the server still running the old API (check: `/api/friends` gives 401 on the new API, 404 on the old).
 - 2026-11-01 – `schema-3-friends.sql` run on `db_a30625_platerater` (all four tables exist). Next: upload the new API, then build in Xcode.
 - 2026-11-01 – Brand hunt and photo guessing: ratings can have a brand (`CarBrand`, `Ratings.Brand`, 19 brands), Jakt has a Märken tab, brands count on the leaderboard. When a photo is added, `CarGuesser` guesses color, brand and kind on the phone and warns on a mismatch. A real make/model recognizer would need a Core ML model or a paid cloud API; not done.
 

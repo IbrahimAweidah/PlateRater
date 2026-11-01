@@ -2,7 +2,7 @@ import Foundation
 
 struct Rating: Identifiable, Decodable, Equatable {
     let id: Int
-    let score: Int
+    let score: Int?
     let comment: String
     let color: String?
     let kind: String?
@@ -17,10 +17,10 @@ struct PlateSummary: Decodable {
     let myRating: Rating?
 }
 
-/// One of the signed-in user's own ratings, as listed on "Mina betyg".
+/// One of the signed-in user's own ratings, as listed on "Mina bilar".
 struct MyRating: Identifiable, Decodable, Equatable {
     let plate: String
-    let score: Int
+    let score: Int?
     let comment: String
     let color: String?
     let kind: String?

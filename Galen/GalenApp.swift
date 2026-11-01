@@ -32,7 +32,7 @@ struct GalenApp: App {
     }
 }
 
-/// Shown for a moment at start, so it's easy to see this is Galen.
+/// Shown for a moment at start, so it's easy to see this is Biljakt.
 struct SplashView: View {
     @State private var wobble = false
 
@@ -52,10 +52,10 @@ struct SplashView: View {
                     .shadow(radius: 12)
                     .rotationEffect(.degrees(wobble ? 6 : -6))
                     .animation(.easeInOut(duration: 0.35).repeatForever(autoreverses: true), value: wobble)
-                Text("Galen")
+                Text("Biljakt")
                     .font(Galen.title(64))
                     .foregroundStyle(.white)
-                Text("Spana · Betygsätt · Jaga färger")
+                Text("Spana · Fota · Jaga bilar")
                     .font(.headline)
                     .foregroundStyle(.white.opacity(0.9))
                 Text("Version \(version)")

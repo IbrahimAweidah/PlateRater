@@ -72,3 +72,11 @@ Photos are stored in the database (scaled down to about 200–400 KB each) and o
 - A rating can have a kind of car (Lastbil, Traktor, Sportbil …) and a brand (Volvo, Tesla, Porsche …). The **Jakt** tab has a color, car-kind and brand hunt; each one you find gives points once.
 - When you add a photo, Galen guesses the color, the brand (from the text on the car) and the kind of car, on the phone, and tells you if the photo doesn't match what you picked. Check the guess and change it if it is wrong.
 - The **Tävla** tab: add a friend with the e-mail address of their Google account. They must have signed in to Galen once and must say yes. Friends see each other's first name, points and which colors, kinds and brands they found, never plates, ratings or photos.
+
+### Biljakt (new name, no driver rating)
+
+The app is now called **Biljakt**, and you no longer rate the driver. A find is the plate plus color, kind, brand, an optional note and an optional photo.
+
+1. Run `PlateRaterAPI/schema-4-biljakt.sql` in `db_a30625_platerater`.
+2. Upload the contents of `Biljakt-API-upload-2026-11-01.zip` (no `appsettings.json` inside). If the server keeps running the old code, stop the site in the SmarterASP panel, upload, and start it again. Check: `/api/friends` in a browser should give 401, not 404.
+3. Build in Xcode.

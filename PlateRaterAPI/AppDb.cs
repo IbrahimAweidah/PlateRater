@@ -17,7 +17,7 @@ public class Rating
     public string Plate { get; set; } = "";
     public int UserId { get; set; }
     public User User { get; set; } = null!;
-    public int Score { get; set; }
+    public int? Score { get; set; }
     public string Comment { get; set; } = "";
     public string? Color { get; set; }
     public string? Kind { get; set; }

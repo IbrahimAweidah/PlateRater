@@ -52,7 +52,7 @@ struct FriendsView: View {
         } header: {
             Text("Topplista")
         } footer: {
-            Text("Poäng för varje färg, sort och märkes bil du har hittat. Kompisar ser bara ditt förnamn och vilka färger, biltyper och märken du hittat, aldrig skyltar eller betyg.")
+            Text("Poäng för varje färg, biltyp och märke du har hittat. Kompisar ser bara ditt förnamn och vilka färger, biltyper och märken du hittat, aldrig skyltar eller anteckningar.")
         }
     }
 
@@ -118,14 +118,14 @@ struct FriendsView: View {
                 Text(errorMessage).font(.caption).foregroundStyle(.red)
             }
             if let mine = auth.email {
-                ShareLink(item: "Tävla mot mig i Galen! Lägg till mig med \(mine) 🤪🚗") {
+                ShareLink(item: "Tävla mot mig i Biljakt! Lägg till mig med \(mine) 🚗🏁") {
                     Label("Bjud in en kompis", systemImage: "square.and.arrow.up")
                 }
             }
         } header: {
             Text("Lägg till kompis")
         } footer: {
-            Text("Skriv adressen till kompisens Google-konto. Kompisen måste ha loggat in i Galen och säga ja innan ni ser varandra.")
+            Text("Skriv adressen till kompisens Google-konto. Kompisen måste ha loggat in i Biljakt och säga ja innan ni ser varandra.")
         }
     }
 

@@ -5,7 +5,6 @@ struct PlateDetailView: View {
     let plate: String
     var store: RatingStore
 
-    @State private var level = GalenLevel.cheeky
     @State private var carColor: CarColor?
     @State private var carKind: CarKind?
     @State private var carBrand: CarBrand?
@@ -68,16 +67,15 @@ struct PlateDetailView: View {
             VStack(spacing: 12) {
                 PlateBadge(plate: plate, size: 30)
                 if let mine = summary?.myRating {
-                    let verdict = GalenLevel(rawValue: mine.score) ?? .cheeky
-                    Text("\(verdict.emoji) \(verdict.name)")
+                    Text("✅ Hittad!")
                         .font(Galen.title(26))
-                    Text("Du spanade in den här bilen \(mine.updatedAt.formatted(date: .abbreviated, time: .omitted))")
+                    Text("Du hittade den här bilen \(mine.updatedAt.formatted(date: .abbreviated, time: .omitted))")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 } else if summary == nil && errorMessage == nil {
                     ProgressView()
                 } else if summary != nil {
-                    Text("Du har inte spanat in den här bilen än. Kör! 🕵️")
+                    Text("Ny bil! Fyll i vad du ser. 🕵️")
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -93,36 +91,7 @@ struct PlateDetailView: View {
     }
 
     private var ratingForm: some View {
-        Section(summary?.myRating == nil ? "Hur galen var föraren?" : "Ditt betyg") {
-            VStack(spacing: 8) {
-                HStack {
-                    ForEach(GalenLevel.allCases) { option in
-                        Button {
-                            level = option
-                        } label: {
-                            VStack(spacing: 2) {
-                                Text(option.emoji)
-                                    .font(.system(size: option == level ? 40 : 28))
-                                Text(String(repeating: "★", count: option.rawValue))
-                                    .font(.system(size: 8))
-                                    .foregroundStyle(Galen.yellow)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .opacity(option == level ? 1 : 0.5)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .animation(.spring(duration: 0.3), value: level)
-                Text(level.name)
-                    .font(Galen.title(22))
-                    .foregroundStyle(level == .galen ? Galen.pink : .primary)
-                Text(level.blurb)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity)
-
+        Section(summary?.myRating == nil ? "Vad hittade du?" : "Ditt fynd") {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Vilken färg hade bilen?")
                     .font(.subheadline.weight(.semibold))
@@ -202,12 +171,12 @@ struct PlateDetailView: View {
                 }
             }
 
-            TextField("Vad hände? (valfritt)", text: $comment, axis: .vertical)
+            TextField("Anteckning (valfritt)", text: $comment, axis: .vertical)
 
             Button {
                 Task { await save() }
             } label: {
-                Text(summary?.myRating == nil ? "Spara betyg!" : "Uppdatera betyg")
+                Text(summary?.myRating == nil ? "Spara fynd!" : "Uppdatera")
                     .font(Galen.title(18))
                     .frame(maxWidth: .infinity)
             }
@@ -225,7 +194,7 @@ struct PlateDetailView: View {
                     .scaledToFit()
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 if newPhoto != nil {
-                    Text("Bilden sparas när du sparar betyget.")
+                    Text("Bilden sparas när du sparar.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -259,7 +228,7 @@ struct PlateDetailView: View {
         } header: {
             Text("Din bild")
         } footer: {
-            Text("Bara du kan se dina betyg, kommentarer och bilder.")
+            Text("Bara du kan se dina fynd, anteckningar och bilder.")
         }
     }
 
@@ -271,7 +240,6 @@ struct PlateDetailView: View {
             try await store.load(plate)
             errorMessage = nil
             if let mine = summary?.myRating {
-                level = GalenLevel(rawValue: mine.score) ?? .cheeky
                 carColor = CarColor(key: mine.color)
                 carKind = CarKind(key: mine.kind) ?? carKind
                 carBrand = CarBrand(key: mine.brand) ?? carBrand
@@ -292,7 +260,7 @@ struct PlateDetailView: View {
         let kindsBefore = Set(store.mine.compactMap { CarKind(key: $0.kind) })
         let brandsBefore = Set(store.mine.compactMap { CarBrand(key: $0.brand) })
         do {
-            try await store.saveRating(score: level.rawValue, comment: comment, color: carColor, kind: carKind, brand: carBrand, photo: newPhoto, for: plate)
+            try await store.saveRating(comment: comment, color: carColor, kind: carKind, brand: carBrand, photo: newPhoto, for: plate)
             errorMessage = nil
             if newPhoto != nil {
                 savedPhoto = newPhoto
@@ -304,17 +272,15 @@ struct PlateDetailView: View {
                 celebrate("🏷️ Nytt märke!\n\(carBrand.name) +\(carBrand.points) poäng")
             } else if let carKind, !kindsBefore.contains(carKind) {
                 celebrate("\(carKind.emoji) Ny sorts bil!\n\(carKind.name) +\(carKind.points) poäng")
-            } else if level == .galen {
-                celebrate("🤪 GALEN FÖRARE!")
             } else {
-                celebrate("\(level.emoji) Sparat!")
+                celebrate("🚗 Sparat!")
             }
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    /// Lets Galen guess the color, brand and kind from the photo, on the phone. Fills in what is still empty,
+    /// Guesses the color, brand and kind from the photo, on the phone. Fills in what is still empty,
     /// and says so if the photo doesn't match what you picked.
     private func guessCar(from image: UIImage) async {
         let guess = await CarGuesser.guess(from: image)
@@ -347,9 +313,9 @@ struct PlateDetailView: View {
             }
         }
         if !guessed.isEmpty {
-            notes.insert("🤖 Galen gissar: \(guessed.joined(separator: ", ")). Ändra om det är fel!", at: 0)
+            notes.insert("🤖 Biljakt gissar: \(guessed.joined(separator: ", ")). Ändra om det är fel!", at: 0)
         }
-        guessText = notes.isEmpty ? "🤖 Galen kunde inte gissa bilen från bilden. Välj själv!" : notes.joined(separator: "\n")
+        guessText = notes.isEmpty ? "🤖 Biljakt kunde inte gissa bilen från bilden. Välj själv!" : notes.joined(separator: "\n")
     }
 
     private func deletePhoto() async {

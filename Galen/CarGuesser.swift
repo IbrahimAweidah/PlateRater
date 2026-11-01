@@ -26,14 +26,16 @@ enum CarGuesser {
             let text = VNRecognizeTextRequest()
             text.recognitionLevel = .accurate
             text.usesLanguageCorrection = false
+            // Badges are small compared to the whole photo, so look for small text too.
+            text.minimumTextHeight = 0.01
             let classify = VNClassifyImageRequest()
             try? VNImageRequestHandler(cgImage: cgImage, orientation: orientation).perform([text, classify])
 
             let words = (text.results ?? [])
-                .compactMap { $0.topCandidates(1).first?.string.uppercased() }
+                .flatMap { $0.topCandidates(3).map { $0.string.uppercased() } }
                 .joined(separator: " ")
             let labels = (classify.results ?? [])
-                .filter { $0.confidence > 0.3 }
+                .filter { $0.confidence > 0.1 }
                 .sorted { $0.confidence > $1.confidence }
                 .map(\.identifier)
 

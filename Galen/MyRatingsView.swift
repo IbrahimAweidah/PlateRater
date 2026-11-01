@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Everything you have rated, how many, and your spotter title.
+/// Every car you have found, how many, and your spotter title.
 struct MyRatingsView: View {
     var store: RatingStore
 
@@ -14,7 +14,7 @@ struct MyRatingsView: View {
                         Text("\(store.mine.count)")
                             .font(Galen.title(56))
                             .foregroundStyle(Galen.pink)
-                        Text(store.mine.count == 1 ? "bil spanad" : "bilar spanade")
+                        Text(store.mine.count == 1 ? "bil hittad" : "bilar hittade")
                             .font(.headline)
                         Text(SpotterRank.title(for: store.mine.count))
                             .font(Galen.title(20))
@@ -26,17 +26,6 @@ struct MyRatingsView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-
-                    HStack {
-                        ForEach(GalenLevel.allCases) { level in
-                            VStack {
-                                Text(level.emoji).font(.title2)
-                                Text("\(store.mine.filter { $0.score == level.rawValue }.count)")
-                                    .font(.caption.bold())
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                    }
                 }
 
                 if let errorMessage {
@@ -45,9 +34,9 @@ struct MyRatingsView: View {
                         .foregroundStyle(.red)
                 }
 
-                Section("Mina betyg") {
+                Section("Mina bilar") {
                     if store.mine.isEmpty {
-                        Text("Du har inte betygsatt någon än. Gå till Spana och börja jaga! 🏁")
+                        Text("Du har inte hittat någon bil än. Gå till Spana och börja jaga! 🏁")
                             .foregroundStyle(.secondary)
                     }
                     ForEach(store.mine) { rating in
@@ -57,7 +46,7 @@ struct MyRatingsView: View {
                     }
                 }
             }
-            .navigationTitle("Mina betyg")
+            .navigationTitle("Mina bilar")
             .navigationDestination(for: String.self) { plate in
                 PlateDetailView(plate: plate, store: store)
             }
@@ -83,7 +72,7 @@ struct MyRatingRow: View {
     @State private var photo: UIImage?
 
     var body: some View {
-        let level = GalenLevel(rawValue: rating.score) ?? .cheeky
+        let kind = CarKind(key: rating.kind)
         HStack(spacing: 12) {
             if let photo {
                 Image(uiImage: photo)
@@ -92,21 +81,18 @@ struct MyRatingRow: View {
                     .frame(width: 48, height: 48)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             } else {
-                Text(level.emoji)
+                Text(kind?.emoji ?? "🚗")
                     .font(.system(size: 32))
                     .frame(width: 48, height: 48)
             }
             VStack(alignment: .leading, spacing: 4) {
                 PlateBadge(plate: rating.plate, size: 14)
-                Text([level.name, CarBrand(key: rating.brand)?.name].compactMap { $0 }.joined(separator: " · "))
+                Text([CarBrand(key: rating.brand)?.name, kind?.name].compactMap { $0 }.joined(separator: " · "))
                     .font(.subheadline.bold())
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 4) {
                 HStack(spacing: 4) {
-                    if let kind = CarKind(key: rating.kind) {
-                        Text(kind.emoji).font(.caption)
-                    }
                     if let color = CarColor(key: rating.color) {
                         ColorDot(color: color, size: 18)
                     }

@@ -10,14 +10,14 @@ struct SignInView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            Text("🤪🚗")
+            Text("🚗🔎")
                 .font(.system(size: 72))
 
-            Text("Galen")
+            Text("Biljakt")
                 .font(Galen.title(56))
                 .foregroundStyle(Galen.pink)
 
-            Text("Spana in galna förare, jaga bilar i alla färger och samla poäng!")
+            Text("Jaga bilar i alla färger, sorter och märken och samla poäng!")
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 

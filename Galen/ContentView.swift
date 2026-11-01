@@ -16,7 +16,7 @@ struct ContentView: View {
             SpotView(auth: auth, store: store)
                 .tabItem { Label("Spana", systemImage: "binoculars.fill") }
             MyRatingsView(store: store)
-                .tabItem { Label("Mina betyg", systemImage: "star.fill") }
+                .tabItem { Label("Mina bilar", systemImage: "car.fill") }
             ColorHuntView(store: store)
                 .tabItem { Label("Jakt", systemImage: "paintpalette.fill") }
             FriendsView(auth: auth, store: store)
@@ -46,7 +46,7 @@ struct SpotView: View {
             VStack(spacing: 20) {
                 Text("🚗💨")
                     .font(.system(size: 56))
-                Text("Såg du en galen förare? Skriv in registreringsnumret!")
+                Text("Såg du en bil? Skriv in registreringsnumret!")
                     .font(.headline)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
@@ -118,7 +118,7 @@ struct SpotView: View {
                 Spacer()
             }
             .padding(.top, 30)
-            .navigationTitle("Galen")
+            .navigationTitle("Biljakt")
             .navigationDestination(for: String.self) { plate in
                 PlateDetailView(plate: plate, store: store)
             }
