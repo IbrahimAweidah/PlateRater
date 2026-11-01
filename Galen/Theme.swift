@@ -165,13 +165,71 @@ enum CarKind: String, CaseIterable, Identifiable {
     }
 }
 
-/// Hunt points: every color and every kind of car you have found counts once.
-enum HuntScore {
-    static func points(colors: some Sequence<CarColor>, kinds: some Sequence<CarKind>) -> Int {
-        Set(colors).reduce(0) { $0 + $1.points } + Set(kinds).reduce(0) { $0 + $1.points }
+/// Car brands for the brand hunt. The raw values are what the API stores (CarBrands in the API).
+enum CarBrand: String, CaseIterable, Identifiable {
+    case volvo, volkswagen, toyota, audi, bmw, mercedes, kia, ford, skoda, tesla, renault,
+         peugeot, hyundai, nissan, polestar, saab, porsche, ferrari, lamborghini
+
+    var id: String { rawValue }
+
+    var name: String {
+        switch self {
+        case .volvo: "Volvo"
+        case .volkswagen: "Volkswagen"
+        case .toyota: "Toyota"
+        case .audi: "Audi"
+        case .bmw: "BMW"
+        case .mercedes: "Mercedes"
+        case .kia: "Kia"
+        case .ford: "Ford"
+        case .skoda: "Škoda"
+        case .tesla: "Tesla"
+        case .renault: "Renault"
+        case .peugeot: "Peugeot"
+        case .hyundai: "Hyundai"
+        case .nissan: "Nissan"
+        case .polestar: "Polestar"
+        case .saab: "Saab"
+        case .porsche: "Porsche"
+        case .ferrari: "Ferrari"
+        case .lamborghini: "Lamborghini"
+        }
     }
 
-    static var maxPoints: Int { points(colors: CarColor.allCases, kinds: CarKind.allCases) }
+    /// Rare brands on Swedish roads are worth more in the hunt.
+    var points: Int {
+        switch self {
+        case .volvo, .volkswagen, .toyota: 1
+        case .audi, .bmw, .mercedes, .kia, .ford, .skoda: 2
+        case .tesla, .renault, .peugeot, .hyundai, .nissan: 3
+        case .polestar, .saab: 4
+        case .porsche, .ferrari, .lamborghini: 5
+        }
+    }
+
+    /// Words written on the car (badge or lettering on the boot) that give the brand away.
+    var badgeWords: [String] {
+        switch self {
+        case .mercedes: ["MERCEDES", "BENZ"]
+        case .volkswagen: ["VOLKSWAGEN"]
+        case .skoda: ["SKODA", "ŠKODA"]
+        default: [rawValue.uppercased()]
+        }
+    }
+
+    init?(key: String?) {
+        guard let key, let brand = CarBrand(rawValue: key) else { return nil }
+        self = brand
+    }
+}
+
+/// Hunt points: every color, kind and brand of car you have found counts once.
+enum HuntScore {
+    static func points(colors: some Sequence<CarColor>, kinds: some Sequence<CarKind>, brands: some Sequence<CarBrand>) -> Int {
+        Set(colors).reduce(0) { $0 + $1.points } + Set(kinds).reduce(0) { $0 + $1.points } + Set(brands).reduce(0) { $0 + $1.points }
+    }
+
+    static var maxPoints: Int { points(colors: CarColor.allCases, kinds: CarKind.allCases, brands: CarBrand.allCases) }
 }
 
 /// A round color dot with an outline, so white and black show on any background.

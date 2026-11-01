@@ -27,12 +27,13 @@ struct APIClient {
         try await decode(send("GET", "api/plates/\(plate)"))
     }
 
-    func saveRating(score: Int, comment: String, color: CarColor?, kind: CarKind?, for plate: String) async throws -> Rating {
+    func saveRating(score: Int, comment: String, color: CarColor?, kind: CarKind?, brand: CarBrand?, for plate: String) async throws -> Rating {
         let body: [String: Any] = [
             "score": score,
             "comment": comment,
             "color": color.map { $0.rawValue as Any } ?? NSNull(),
             "kind": kind.map { $0.rawValue as Any } ?? NSNull(),
+            "brand": brand.map { $0.rawValue as Any } ?? NSNull(),
         ]
         return try await decode(send("PUT", "api/plates/\(plate)/rating", json: body))
     }

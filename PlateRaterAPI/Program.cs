@@ -56,6 +56,8 @@ api.MapPut("/plates/{plate}/rating", async (string plate, RatingInput input, Cla
     if (color != null && !CarColors.All.Contains(color)) return Results.BadRequest(new { error = "Okänd bilfärg." });
     var kind = string.IsNullOrWhiteSpace(input.Kind) ? null : input.Kind.Trim().ToLowerInvariant();
     if (kind != null && !CarKinds.All.Contains(kind)) return Results.BadRequest(new { error = "Okänd sorts bil." });
+    var brand = string.IsNullOrWhiteSpace(input.Brand) ? null : input.Brand.Trim().ToLowerInvariant();
+    if (brand != null && !CarBrands.All.Contains(brand)) return Results.BadRequest(new { error = "Okänt bilmärke." });
 
     var me = await CurrentUser(principal, db);
     var now = DateTime.UtcNow;
@@ -69,6 +71,7 @@ api.MapPut("/plates/{plate}/rating", async (string plate, RatingInput input, Cla
     rating.Comment = comment;
     rating.Color = color;
     rating.Kind = kind;
+    rating.Brand = brand;
     rating.UpdatedAt = now;
     await db.SaveChangesAsync();
 
@@ -138,12 +141,12 @@ api.MapGet("/me/ratings", async (ClaimsPrincipal principal, AppDb db) =>
         .ToListAsync();
 
     var ratings = rows.Select(x => new MyRatingDto(
-        x.Rating.Plate, x.Rating.Score, x.Rating.Comment, x.Rating.Color, x.Rating.Kind, x.HasPhoto, Utc(x.Rating.UpdatedAt))).ToList();
+        x.Rating.Plate, x.Rating.Score, x.Rating.Comment, x.Rating.Color, x.Rating.Kind, x.Rating.Brand, x.HasPhoto, Utc(x.Rating.UpdatedAt))).ToList();
     return Results.Ok(new MyRatingsDto(ratings.Count, ratings));
 });
 
 // Friends: add each other by Google e-mail address and compete in the color and car-kind hunt.
-// A friend only ever sees your first name and which colors and kinds of car you have found,
+// A friend only ever sees your first name and which colors, kinds and brands of car you have found,
 // never your plates, ratings, comments or photos.
 api.MapGet("/friends", async (ClaimsPrincipal principal, AppDb db) =>
 {
@@ -160,7 +163,7 @@ api.MapGet("/friends", async (ClaimsPrincipal principal, AppDb db) =>
     var playerIds = friends.Select(x => x.Friend.Id).Append(me.Id).ToList();
     var found = await db.Ratings
         .Where(r => playerIds.Contains(r.UserId))
-        .Select(r => new { r.UserId, r.Color, r.Kind })
+        .Select(r => new { r.UserId, r.Color, r.Kind, r.Brand })
         .ToListAsync();
 
     PlayerDto Player(User user, int? friendshipId)
@@ -168,7 +171,8 @@ api.MapGet("/friends", async (ClaimsPrincipal principal, AppDb db) =>
         var rows = found.Where(r => r.UserId == user.Id).ToList();
         return new PlayerDto(friendshipId, FirstName(user), user.Id == me.Id, rows.Count,
             rows.Select(r => r.Color).OfType<string>().Distinct().ToList(),
-            rows.Select(r => r.Kind).OfType<string>().Distinct().ToList());
+            rows.Select(r => r.Kind).OfType<string>().Distinct().ToList(),
+            rows.Select(r => r.Brand).OfType<string>().Distinct().ToList());
     }
 
     var players = friends.Select(x => Player(x.Friend, x.Link.Id)).Append(Player(me, null)).ToList();
@@ -258,18 +262,18 @@ static async Task<Rating?> MyRating(string plate, ClaimsPrincipal principal, App
 }
 
 static RatingDto ToDto(Rating r, bool hasPhoto) =>
-    new(r.Id, r.Score, r.Comment, r.Color, r.Kind, hasPhoto, Utc(r.UpdatedAt));
+    new(r.Id, r.Score, r.Comment, r.Color, r.Kind, r.Brand, hasPhoto, Utc(r.UpdatedAt));
 
 // Whole seconds in UTC, so the app gets plain ISO 8601 dates like 2026-10-25T21:00:00Z.
 static DateTime Utc(DateTime value) => new(value.Ticks - value.Ticks % TimeSpan.TicksPerSecond, DateTimeKind.Utc);
 
-record RatingInput(int Score, string? Comment, string? Color, string? Kind);
+record RatingInput(int Score, string? Comment, string? Color, string? Kind, string? Brand);
 record FriendInput(string? Email);
-record PlayerDto(int? FriendshipId, string Name, bool IsMe, int Cars, List<string> Colors, List<string> Kinds);
+record PlayerDto(int? FriendshipId, string Name, bool IsMe, int Cars, List<string> Colors, List<string> Kinds, List<string> Brands);
 record FriendRequestDto(int Id, string Name, string? Email);
 record FriendsDto(List<PlayerDto> Players, List<FriendRequestDto> Incoming, List<FriendRequestDto> Outgoing);
-record RatingDto(int Id, int Score, string Comment, string? Color, string? Kind, bool HasPhoto, DateTime UpdatedAt);
-record MyRatingDto(string Plate, int Score, string Comment, string? Color, string? Kind, bool HasPhoto, DateTime UpdatedAt);
+record RatingDto(int Id, int Score, string Comment, string? Color, string? Kind, string? Brand, bool HasPhoto, DateTime UpdatedAt);
+record MyRatingDto(string Plate, int Score, string Comment, string? Color, string? Kind, string? Brand, bool HasPhoto, DateTime UpdatedAt);
 record MyRatingsDto(int Count, List<MyRatingDto> Ratings);
 
 // The colors the app offers. Keep in sync with CarColor in the iOS app.
@@ -283,6 +287,13 @@ static class CarKinds
 {
     public static readonly HashSet<string> All =
         ["car", "suv", "van", "truck", "bus", "motorcycle", "taxi", "camper", "tractor", "sports", "vintage", "emergency"];
+}
+// The car brands for the brand hunt. Keep in sync with CarBrand in the iOS app.
+static class CarBrands
+{
+    public static readonly HashSet<string> All =
+        ["volvo", "volkswagen", "toyota", "audi", "bmw", "mercedes", "kia", "ford", "skoda", "tesla", "renault",
+         "peugeot", "hyundai", "nissan", "polestar", "saab", "porsche", "ferrari", "lamborghini"];
 }
 record PlateDto(string Plate, RatingDto? MyRating);
 

@@ -98,7 +98,7 @@ struct MyRatingRow: View {
             }
             VStack(alignment: .leading, spacing: 4) {
                 PlateBadge(plate: rating.plate, size: 14)
-                Text(level.name)
+                Text([level.name, CarBrand(key: rating.brand)?.name].compactMap { $0 }.joined(separator: " · "))
                     .font(.subheadline.bold())
             }
             Spacer()

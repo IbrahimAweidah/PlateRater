@@ -8,6 +8,8 @@ struct PlateDetailView: View {
     @State private var level = GalenLevel.cheeky
     @State private var carColor: CarColor?
     @State private var carKind: CarKind?
+    @State private var carBrand: CarBrand?
+    @State private var guessText: String?
     @State private var comment = ""
     @State private var newPhoto: UIImage?
     @State private var savedPhoto: UIImage?
@@ -37,6 +39,9 @@ struct PlateDetailView: View {
                 }
                 pickerItem = nil
             }
+        }
+        .onChange(of: newPhoto) { _, image in
+            if let image { Task { await guessCar(from: image) } }
         }
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker { newPhoto = $0 }
@@ -169,6 +174,34 @@ struct PlateDetailView: View {
                     .foregroundStyle(.secondary)
             }
 
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Vilket märke?")
+                    .font(.subheadline.weight(.semibold))
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 8) {
+                    ForEach(CarBrand.allCases) { option in
+                        Button {
+                            carBrand = carBrand == option ? nil : option
+                        } label: {
+                            Text(option.name)
+                                .font(.caption.weight(option == carBrand ? .heavy : .regular))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 6)
+                                .background(option == carBrand ? Galen.blue : Color.secondary.opacity(0.12), in: Capsule())
+                                .foregroundStyle(option == carBrand ? Color.white : Color.primary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .animation(.spring(duration: 0.3), value: carBrand)
+                if let guessText {
+                    Text(guessText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             TextField("Vad hände? (valfritt)", text: $comment, axis: .vertical)
 
             Button {
@@ -240,7 +273,8 @@ struct PlateDetailView: View {
             if let mine = summary?.myRating {
                 level = GalenLevel(rawValue: mine.score) ?? .cheeky
                 carColor = CarColor(key: mine.color)
-                carKind = CarKind(key: mine.kind)
+                carKind = CarKind(key: mine.kind) ?? carKind
+                carBrand = CarBrand(key: mine.brand) ?? carBrand
                 comment = mine.comment
                 if mine.hasPhoto {
                     savedPhoto = await store.photo(for: plate)
@@ -256,8 +290,9 @@ struct PlateDetailView: View {
         defer { isSaving = false }
         let colorsBefore = Set(store.mine.compactMap { CarColor(key: $0.color) })
         let kindsBefore = Set(store.mine.compactMap { CarKind(key: $0.kind) })
+        let brandsBefore = Set(store.mine.compactMap { CarBrand(key: $0.brand) })
         do {
-            try await store.saveRating(score: level.rawValue, comment: comment, color: carColor, kind: carKind, photo: newPhoto, for: plate)
+            try await store.saveRating(score: level.rawValue, comment: comment, color: carColor, kind: carKind, brand: carBrand, photo: newPhoto, for: plate)
             errorMessage = nil
             if newPhoto != nil {
                 savedPhoto = newPhoto
@@ -265,6 +300,8 @@ struct PlateDetailView: View {
             }
             if let carColor, !colorsBefore.contains(carColor) {
                 celebrate("🎨 Ny färg!\n\(carColor.name) +\(carColor.points) poäng")
+            } else if let carBrand, !brandsBefore.contains(carBrand) {
+                celebrate("🏷️ Nytt märke!\n\(carBrand.name) +\(carBrand.points) poäng")
             } else if let carKind, !kindsBefore.contains(carKind) {
                 celebrate("\(carKind.emoji) Ny sorts bil!\n\(carKind.name) +\(carKind.points) poäng")
             } else if level == .galen {
@@ -275,6 +312,23 @@ struct PlateDetailView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Lets Galen guess the brand and kind from the photo, on the phone. Only fills in what is still empty.
+    private func guessCar(from image: UIImage) async {
+        let guess = await CarGuesser.guess(from: image)
+        var guessed: [String] = []
+        if carBrand == nil, let brand = guess.brand {
+            carBrand = brand
+            guessed.append(brand.name)
+        }
+        if carKind == nil, let kind = guess.kind {
+            carKind = kind
+            guessed.append("\(kind.emoji) \(kind.name)")
+        }
+        guessText = guessed.isEmpty
+            ? "🤖 Galen kunde inte gissa bilen från bilden. Välj själv!"
+            : "🤖 Galen gissar: \(guessed.joined(separator: ", ")). Ändra om det är fel!"
     }
 
     private func deletePhoto() async {

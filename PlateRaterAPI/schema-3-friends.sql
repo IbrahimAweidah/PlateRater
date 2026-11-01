@@ -1,7 +1,7 @@
--- Galen update: kind of car on ratings, and friends who compete in the hunt.
+-- Galen update: kind and brand of car on ratings, and friends who compete in the hunt.
 -- Run once in the SmarterASP.NET database (Control Panel > Databases > MSSQL > Web SQL Manager),
 -- AFTER schema-2-galen.sql and BEFORE uploading the new API.
-ALTER TABLE dbo.PlateRaterRatings ADD Kind NVARCHAR(20) NULL;
+ALTER TABLE dbo.PlateRaterRatings ADD Kind NVARCHAR(20) NULL, Brand NVARCHAR(30) NULL;
 
 CREATE TABLE dbo.PlateRaterFriendships (
     Id         INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_PlateRaterFriendships PRIMARY KEY,

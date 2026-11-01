@@ -6,6 +6,7 @@ struct Rating: Identifiable, Decodable, Equatable {
     let comment: String
     let color: String?
     let kind: String?
+    let brand: String?
     let hasPhoto: Bool
     let updatedAt: Date
 }
@@ -23,6 +24,7 @@ struct MyRating: Identifiable, Decodable, Equatable {
     let comment: String
     let color: String?
     let kind: String?
+    let brand: String?
     let hasPhoto: Bool
     let updatedAt: Date
 
@@ -34,7 +36,7 @@ struct MyRatings: Decodable {
     let ratings: [MyRating]
 }
 
-/// You or a friend on the leaderboard. Friends only ever see which colors and kinds of car you found.
+/// You or a friend on the leaderboard. Friends only ever see which colors, kinds and brands of car you found.
 struct Player: Identifiable, Decodable, Equatable {
     let friendshipId: Int?
     let name: String
@@ -42,11 +44,13 @@ struct Player: Identifiable, Decodable, Equatable {
     let cars: Int
     let colors: [String]
     let kinds: [String]
+    let brands: [String]
 
     var id: String { isMe ? "me" : "friend-\(friendshipId ?? 0)" }
     var foundColors: [CarColor] { colors.compactMap { CarColor(key: $0) } }
     var foundKinds: [CarKind] { kinds.compactMap { CarKind(key: $0) } }
-    var points: Int { HuntScore.points(colors: foundColors, kinds: foundKinds) }
+    var foundBrands: [CarBrand] { brands.compactMap { CarBrand(key: $0) } }
+    var points: Int { HuntScore.points(colors: foundColors, kinds: foundKinds, brands: foundBrands) }
 }
 
 struct FriendRequest: Identifiable, Decodable, Equatable {

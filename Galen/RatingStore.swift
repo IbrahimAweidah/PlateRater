@@ -32,9 +32,9 @@ final class RatingStore {
         mine = try await api.myRatings().ratings
     }
 
-    func saveRating(score: Int, comment: String, color: CarColor?, kind: CarKind?, photo: UIImage?, for plate: String) async throws {
+    func saveRating(score: Int, comment: String, color: CarColor?, kind: CarKind?, brand: CarBrand?, photo: UIImage?, for plate: String) async throws {
         let key = PlateNumber.normalize(plate)
-        _ = try await api.saveRating(score: score, comment: comment, color: color, kind: kind, for: key)
+        _ = try await api.saveRating(score: score, comment: comment, color: color, kind: kind, brand: brand, for: key)
         if let photo, let jpeg = Self.jpeg(photo) {
             try await api.uploadPhoto(jpeg, for: key)
             photos[key] = photo

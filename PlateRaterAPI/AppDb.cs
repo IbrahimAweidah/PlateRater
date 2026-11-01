@@ -21,6 +21,7 @@ public class Rating
     public string Comment { get; set; } = "";
     public string? Color { get; set; }
     public string? Kind { get; set; }
+    public string? Brand { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
@@ -36,7 +37,7 @@ public class Photo
 }
 
 // A friend request from one player to another. Once accepted, both can see each other's
-// hunt progress (which colors and kinds of car they have found), never their plates or ratings.
+// hunt progress (which colors, kinds and brands of car they have found), never their plates or ratings.
 public class Friendship
 {
     public int Id { get; set; }

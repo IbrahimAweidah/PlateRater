@@ -1,12 +1,13 @@
 import SwiftUI
 
-/// The hunt: find a car of every color and every kind. Rare ones are worth more points.
+/// The hunt: find a car of every color, every kind and every brand. Rare ones are worth more points.
 struct ColorHuntView: View {
     var store: RatingStore
 
     enum Hunt: String, CaseIterable, Identifiable {
         case colors = "Färger"
         case kinds = "Biltyper"
+        case brands = "Märken"
         var id: String { rawValue }
     }
 
@@ -24,10 +25,17 @@ struct ColorHuntView: View {
         }
     }
 
+    private var brandCounts: [CarBrand: Int] {
+        store.mine.reduce(into: [:]) { counts, rating in
+            if let brand = CarBrand(key: rating.brand) { counts[brand, default: 0] += 1 }
+        }
+    }
+
     var body: some View {
         let colorCounts = self.colorCounts
         let kindCounts = self.kindCounts
-        let points = HuntScore.points(colors: colorCounts.keys, kinds: kindCounts.keys)
+        let brandCounts = self.brandCounts
+        let points = HuntScore.points(colors: colorCounts.keys, kinds: kindCounts.keys, brands: brandCounts.keys)
 
         NavigationStack {
             ScrollView {
@@ -70,6 +78,23 @@ struct ColorHuntView: View {
                                         .font(.system(size: 36))
                                         .frame(width: 56, height: 56)
                                         .background(Galen.yellow.opacity(0.4), in: Circle())
+                                }
+                            }
+                        }
+                    case .brands:
+                        HuntProgress(
+                            found: brandCounts.count, total: CarBrand.allCases.count, unit: "märken",
+                            allDone: "🏆 Du har hittat alla märken! Helt galet!",
+                            next: CarBrand.allCases.filter { brandCounts[$0] == nil }.max { $0.points < $1.points }
+                                .map { "Kan du hitta en \($0.name)? Den ger \($0.points) poäng!" })
+                        grid {
+                            ForEach(CarBrand.allCases) { brand in
+                                HuntCard(name: brand.name, points: brand.points, count: brandCounts[brand] ?? 0) {
+                                    Text(String(brand.name.prefix(2)))
+                                        .font(Galen.title(22))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 56, height: 56)
+                                        .background(Galen.blue, in: Circle())
                                 }
                             }
                         }

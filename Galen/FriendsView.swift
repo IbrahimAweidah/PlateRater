@@ -45,14 +45,14 @@ struct FriendsView: View {
                     }
             }
             if players.count == 1 {
-                Text("Lägg till en kompis nedan och se vem som hittar flest färger och sorters bilar! 🏁")
+                Text("Lägg till en kompis nedan och se vem som hittar flest färger, sorters bilar och märken! 🏁")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
         } header: {
             Text("Topplista")
         } footer: {
-            Text("Poäng för varje färg och sorts bil du har hittat. Kompisar ser bara ditt förnamn och vilka färger och biltyper du hittat, aldrig skyltar eller betyg.")
+            Text("Poäng för varje färg, sort och märkes bil du har hittat. Kompisar ser bara ditt förnamn och vilka färger, biltyper och märken du hittat, aldrig skyltar eller betyg.")
         }
     }
 
@@ -176,7 +176,7 @@ private struct PlayerRow: View {
                         Text("Du").font(.caption.bold()).foregroundStyle(Galen.pink)
                     }
                 }
-                Text("🎨 \(player.foundColors.count)/\(CarColor.allCases.count) · 🚗 \(player.foundKinds.count)/\(CarKind.allCases.count) · \(player.cars) bilar")
+                Text("🎨 \(player.foundColors.count)/\(CarColor.allCases.count) · 🚗 \(player.foundKinds.count)/\(CarKind.allCases.count) · 🏷️ \(player.foundBrands.count)/\(CarBrand.allCases.count)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

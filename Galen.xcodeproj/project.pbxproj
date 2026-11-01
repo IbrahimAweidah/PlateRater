@@ -23,6 +23,7 @@
 		4E0000000000000000000044 /* MyRatingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000045 /* MyRatingsView.swift */; };
 		4E0000000000000000000046 /* ColorHuntView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000047 /* ColorHuntView.swift */; };
 		4E000000000000000000004A /* FriendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E000000000000000000004B /* FriendsView.swift */; };
+		4E000000000000000000004C /* CarGuesser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E000000000000000000004D /* CarGuesser.swift */; };
 		4E0000000000000000000048 /* PlateScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000049 /* PlateScanner.swift */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,7 @@
 		4E0000000000000000000045 /* MyRatingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyRatingsView.swift; sourceTree = "<group>"; };
 		4E0000000000000000000047 /* ColorHuntView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorHuntView.swift; sourceTree = "<group>"; };
 		4E000000000000000000004B /* FriendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendsView.swift; sourceTree = "<group>"; };
+		4E000000000000000000004D /* CarGuesser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarGuesser.swift; sourceTree = "<group>"; };
 		4E0000000000000000000049 /* PlateScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlateScanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -92,6 +94,7 @@
 				4E0000000000000000000045 /* MyRatingsView.swift */,
 				4E0000000000000000000047 /* ColorHuntView.swift */,
 				4E000000000000000000004B /* FriendsView.swift */,
+				4E000000000000000000004D /* CarGuesser.swift */,
 				4E0000000000000000000049 /* PlateScanner.swift */,
 				4E0000000000000000000027 /* Config.xcconfig */,
 				4E0000000000000000000026 /* Info.plist */,
@@ -198,6 +201,7 @@
 				4E0000000000000000000044 /* MyRatingsView.swift in Sources */,
 				4E0000000000000000000046 /* ColorHuntView.swift in Sources */,
 				4E000000000000000000004A /* FriendsView.swift in Sources */,
+				4E000000000000000000004C /* CarGuesser.swift in Sources */,
 				4E0000000000000000000048 /* PlateScanner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -69,5 +69,6 @@ Photos are stored in the database (scaled down to about 200–400 KB each) and o
 ### Private ratings, car kinds and friends
 
 - Ratings, comments and photos are private: the API only returns your own.
-- A rating can have a kind of car (Lastbil, Traktor, Sportbil …). The **Jakt** tab has a color hunt and a car-kind hunt; each color and kind you find gives points once.
-- The **Tävla** tab: add a friend with the e-mail address of their Google account. They must have signed in to Galen once and must say yes. Friends see each other's first name, points and which colors and kinds they found, never plates, ratings or photos.
+- A rating can have a kind of car (Lastbil, Traktor, Sportbil …) and a brand (Volvo, Tesla, Porsche …). The **Jakt** tab has a color, car-kind and brand hunt; each one you find gives points once.
+- When you add a photo, Galen guesses the brand (from the text on the car) and the kind of car, on the phone. Check the guess and change it if it is wrong.
+- The **Tävla** tab: add a friend with the e-mail address of their Google account. They must have signed in to Galen once and must say yes. Friends see each other's first name, points and which colors, kinds and brands they found, never plates, ratings or photos.

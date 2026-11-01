@@ -48,7 +48,7 @@ enum PlateScanner {
     }
 }
 
-private extension CGImagePropertyOrientation {
+extension CGImagePropertyOrientation {
     init(_ orientation: UIImage.Orientation) {
         switch orientation {
         case .up: self = .up
