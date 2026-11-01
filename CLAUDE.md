@@ -36,3 +36,28 @@
 - The original API is deployed and the first Xcode build succeeded.
 - Galen update (colors, photos, Mina betyg, Jakt, Tävla): needs `schema-2-galen.sql` and `schema-3-friends.sql` run, then API re-upload, then an Xcode build. The friends/kinds code has not been compiled yet.
 - No free API gives Swedish vehicle data (make/model/color) by plate; Transportstyrelsen and the commercial options (biluppgifter.se, car.info, tic.io, minbilkoll.se) need an agreement or a paid plan.
+
+## Branches
+
+- `main` – the original PlateRater app with the backend.
+- `claude/project-thread-m1xtn2` (PR #1) – Galen rebrand: colors, photos, Mina betyg, color hunt, plate OCR, icon and splash.
+- `claude/project-thread-y1essk` – built on PR #1: private ratings, car-kind hunt, friends and leaderboard. Merge PR #1 first.
+
+## Legal review (2026-11-01)
+
+A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR3xbetS37BPqkhL. Main points and what is still open before App Store launch:
+
+- Done: ratings, comments and photos are private (only the author sees them), because public ratings of a plate are personal data about the car owner and free text can be defamation.
+- Keep it that way: never show one user's plates, ratings, comments or photos to another user, friends included.
+- Still to do: privacy policy and terms (link in the app), in-app account deletion, Sign in with Apple, 13-year age limit, "never use while driving" warning, data retention, SmarterASP data processing agreement and data location, own DB user separate from Ibrax_1, a real domain with its own certificate. A lawyer should review before launch.
+
+## Recent changes (newest first)
+
+Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
+
+- 2026-11-01 – Friends: new Tävla tab, add friends by Google e-mail, accept/decline, leaderboard by hunt points (`FriendsView.swift`, `/api/friends`, `schema-3-friends.sql`). Friends see first name, points, and which colors/kinds were found only.
+- 2026-11-01 – Car-kind hunt: ratings can have a kind of car (`CarKind`, `Ratings.Kind`); Färgjakt tab renamed Jakt with Färger/Biltyper; points via `HuntScore`.
+- 2026-11-01 – Private ratings: `GET /api/plates/{plate}` returns only your own rating; the app no longer shows average, count or "Alla betyg".
+- 2026-11-01 – Legal review written (see above).
+- 2026-10-30 – Galen rebrand, colors, photos, Mina betyg, color hunt, plate OCR, app icon and splash (PR #1).
+- 2026-10-27 – API deployed to SmarterASP; first Xcode build succeeded.
