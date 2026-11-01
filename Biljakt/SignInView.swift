@@ -14,8 +14,8 @@ struct SignInView: View {
                 .font(.system(size: 72))
 
             Text("Biljakt")
-                .font(Galen.title(56))
-                .foregroundStyle(Galen.pink)
+                .font(AppStyle.title(56))
+                .foregroundStyle(AppStyle.pink)
 
             Text("Jaga bilar i alla färger, sorter och märken och samla poäng!")
                 .foregroundStyle(.secondary)
@@ -40,7 +40,7 @@ struct SignInView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Galen.pink)
+            .tint(AppStyle.pink)
             .controlSize(.large)
             .disabled(isSigningIn)
             .padding(.horizontal, 40)
@@ -50,6 +50,10 @@ struct SignInView: View {
                     .font(.caption)
                     .foregroundStyle(.red)
             }
+
+            Text("En produkt av Ibrax AB")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .padding(.bottom, 40)
     }

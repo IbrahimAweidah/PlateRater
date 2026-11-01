@@ -12,12 +12,12 @@ struct MyRatingsView: View {
                 Section {
                     VStack(spacing: 6) {
                         Text("\(store.mine.count)")
-                            .font(Galen.title(56))
-                            .foregroundStyle(Galen.pink)
+                            .font(AppStyle.title(56))
+                            .foregroundStyle(AppStyle.pink)
                         Text(store.mine.count == 1 ? "bil hittad" : "bilar hittade")
                             .font(.headline)
                         Text(SpotterRank.title(for: store.mine.count))
-                            .font(Galen.title(20))
+                            .font(AppStyle.title(20))
                         if let left = SpotterRank.toNext(from: store.mine.count) {
                             Text("\(left) till nästa nivå!")
                                 .font(.caption)

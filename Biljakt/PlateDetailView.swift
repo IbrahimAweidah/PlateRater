@@ -49,10 +49,10 @@ struct PlateDetailView: View {
         .overlay {
             if let celebration {
                 Text(celebration)
-                    .font(Galen.title(34))
+                    .font(AppStyle.title(34))
                     .multilineTextAlignment(.center)
                     .padding(30)
-                    .background(Galen.yellow, in: RoundedRectangle(cornerRadius: 24))
+                    .background(AppStyle.yellow, in: RoundedRectangle(cornerRadius: 24))
                     .rotationEffect(.degrees(-4))
                     .shadow(radius: 10)
                     .transition(.scale.combined(with: .opacity))
@@ -68,7 +68,7 @@ struct PlateDetailView: View {
                 PlateBadge(plate: plate, size: 30)
                 if let mine = summary?.myRating {
                     Text("✅ Hittad!")
-                        .font(Galen.title(26))
+                        .font(AppStyle.title(26))
                     Text("Du hittade den här bilen \(mine.updatedAt.formatted(date: .abbreviated, time: .omitted))")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -130,7 +130,7 @@ struct PlateDetailView: View {
                             Text(option.emoji)
                                 .font(.system(size: option == carKind ? 34 : 26))
                                 .frame(width: 42, height: 42)
-                                .background(option == carKind ? Galen.yellow.opacity(0.5) : Color.clear, in: Circle())
+                                .background(option == carKind ? AppStyle.yellow.opacity(0.5) : Color.clear, in: Circle())
                                 .opacity(carKind == nil || option == carKind ? 1 : 0.5)
                         }
                         .buttonStyle(.plain)
@@ -157,7 +157,7 @@ struct PlateDetailView: View {
                                 .minimumScaleFactor(0.7)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 6)
-                                .background(option == carBrand ? Galen.blue : Color.secondary.opacity(0.12), in: Capsule())
+                                .background(option == carBrand ? AppStyle.blue : Color.secondary.opacity(0.12), in: Capsule())
                                 .foregroundStyle(option == carBrand ? Color.white : Color.primary)
                         }
                         .buttonStyle(.plain)
@@ -177,11 +177,11 @@ struct PlateDetailView: View {
                 Task { await save() }
             } label: {
                 Text(summary?.myRating == nil ? "Spara fynd!" : "Uppdatera")
-                    .font(Galen.title(18))
+                    .font(AppStyle.title(18))
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Galen.pink)
+            .tint(AppStyle.pink)
             .disabled(isSaving)
         }
     }

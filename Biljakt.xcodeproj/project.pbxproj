@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4E0000000000000000000015 /* GalenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000011 /* GalenApp.swift */; };
+		4E0000000000000000000015 /* BiljaktApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000011 /* BiljaktApp.swift */; };
 		4E0000000000000000000017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000013 /* Assets.xcassets */; };
 		4E0000000000000000000018 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000014 /* Preview Assets.xcassets */; };
 		4E0000000000000000000019 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000012 /* ContentView.swift */; };
@@ -28,8 +28,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4E0000000000000000000010 /* Galen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Galen.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		4E0000000000000000000011 /* GalenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalenApp.swift; sourceTree = "<group>"; };
+		4E0000000000000000000010 /* Biljakt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Biljakt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E0000000000000000000011 /* BiljaktApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiljaktApp.swift; sourceTree = "<group>"; };
 		4E0000000000000000000012 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		4E0000000000000000000013 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4E0000000000000000000014 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -65,7 +65,7 @@
 		4E0000000000000000000002 = {
 			isa = PBXGroup;
 			children = (
-				4E0000000000000000000004 /* Galen */,
+				4E0000000000000000000004 /* Biljakt */,
 				4E0000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -73,15 +73,15 @@
 		4E0000000000000000000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4E0000000000000000000010 /* Galen.app */,
+				4E0000000000000000000010 /* Biljakt.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		4E0000000000000000000004 /* Galen */ = {
+		4E0000000000000000000004 /* Biljakt */ = {
 			isa = PBXGroup;
 			children = (
-				4E0000000000000000000011 /* GalenApp.swift */,
+				4E0000000000000000000011 /* BiljaktApp.swift */,
 				4E0000000000000000000012 /* ContentView.swift */,
 				4E000000000000000000001B /* Models.swift */,
 				4E000000000000000000001D /* RatingStore.swift */,
@@ -101,7 +101,7 @@
 				4E0000000000000000000013 /* Assets.xcassets */,
 				4E0000000000000000000005 /* Preview Content */,
 			);
-			path = Galen;
+			path = Biljakt;
 			sourceTree = "<group>";
 		};
 		4E0000000000000000000005 /* Preview Content */ = {
@@ -115,9 +115,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4E0000000000000000000006 /* Galen */ = {
+		4E0000000000000000000006 /* Biljakt */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4E000000000000000000000B /* Build configuration list for PBXNativeTarget "Galen" */;
+			buildConfigurationList = 4E000000000000000000000B /* Build configuration list for PBXNativeTarget "Biljakt" */;
 			buildPhases = (
 				4E0000000000000000000007 /* Sources */,
 				4E0000000000000000000009 /* Frameworks */,
@@ -127,12 +127,12 @@
 			);
 			dependencies = (
 			);
-			name = Galen;
+			name = Biljakt;
 			packageProductDependencies = (
 				4E000000000000000000002A /* GoogleSignIn */,
 			);
-			productName = Galen;
-			productReference = 4E0000000000000000000010 /* Galen.app */;
+			productName = Biljakt;
+			productReference = 4E0000000000000000000010 /* Biljakt.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -150,7 +150,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 4E000000000000000000000A /* Build configuration list for PBXProject "Galen" */;
+			buildConfigurationList = 4E000000000000000000000A /* Build configuration list for PBXProject "Biljakt" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -166,7 +166,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4E0000000000000000000006 /* Galen */,
+				4E0000000000000000000006 /* Biljakt */,
 			);
 		};
 /* End PBXProject section */
@@ -188,7 +188,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4E0000000000000000000015 /* GalenApp.swift in Sources */,
+				4E0000000000000000000015 /* BiljaktApp.swift in Sources */,
 				4E0000000000000000000019 /* ContentView.swift in Sources */,
 				4E000000000000000000001A /* Models.swift in Sources */,
 				4E000000000000000000001C /* RatingStore.swift in Sources */,
@@ -266,12 +266,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Galen/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Biljakt/Preview Content\"";
 				DEVELOPMENT_TEAM = 4T5RSJWR7W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Galen/Info.plist;
+				INFOPLIST_FILE = Biljakt/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Biljakt;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Ibrax AB";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Biljakt använder kameran så att du kan fota bilar du hittar.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Biljakt sparar dina bilfoton i Bilder när du ber om det.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -299,12 +300,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Galen/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Biljakt/Preview Content\"";
 				DEVELOPMENT_TEAM = 4T5RSJWR7W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Galen/Info.plist;
+				INFOPLIST_FILE = Biljakt/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Biljakt;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Ibrax AB";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Biljakt använder kameran så att du kan fota bilar du hittar.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Biljakt sparar dina bilfoton i Bilder när du ber om det.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -346,7 +348,7 @@
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCConfigurationList section */
-		4E000000000000000000000A /* Build configuration list for PBXProject "Galen" */ = {
+		4E000000000000000000000A /* Build configuration list for PBXProject "Biljakt" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4E000000000000000000000C /* Debug */,
@@ -355,7 +357,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4E000000000000000000000B /* Build configuration list for PBXNativeTarget "Galen" */ = {
+		4E000000000000000000000B /* Build configuration list for PBXNativeTarget "Biljakt" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4E000000000000000000000E /* Debug */,

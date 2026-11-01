@@ -41,7 +41,7 @@ struct ColorHuntView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     Text("⭐️ \(points) av \(HuntScore.maxPoints) poäng")
-                        .font(Galen.title(26))
+                        .font(AppStyle.title(26))
 
                     Picker("Jakt", selection: $hunt) {
                         ForEach(Hunt.allCases) { Text($0.rawValue).tag($0) }
@@ -77,7 +77,7 @@ struct ColorHuntView: View {
                                     Text(kind.emoji)
                                         .font(.system(size: 36))
                                         .frame(width: 56, height: 56)
-                                        .background(Galen.yellow.opacity(0.4), in: Circle())
+                                        .background(AppStyle.yellow.opacity(0.4), in: Circle())
                                 }
                             }
                         }
@@ -91,10 +91,10 @@ struct ColorHuntView: View {
                             ForEach(CarBrand.allCases) { brand in
                                 HuntCard(name: brand.name, points: brand.points, count: brandCounts[brand] ?? 0) {
                                     Text(String(brand.name.prefix(2)))
-                                        .font(Galen.title(22))
+                                        .font(AppStyle.title(22))
                                         .foregroundStyle(.white)
                                         .frame(width: 56, height: 56)
-                                        .background(Galen.blue, in: Circle())
+                                        .background(AppStyle.blue, in: Circle())
                                 }
                             }
                         }
@@ -124,11 +124,11 @@ private struct HuntProgress: View {
             Text("\(found) av \(total) \(unit)")
                 .font(.headline)
             ProgressView(value: Double(found), total: Double(total))
-                .tint(Galen.pink)
+                .tint(AppStyle.pink)
                 .padding(.horizontal, 40)
             if found == total {
                 Text(allDone)
-                    .font(Galen.title(20))
+                    .font(AppStyle.title(20))
                     .multilineTextAlignment(.center)
             } else if let next {
                 Text(next)
@@ -156,7 +156,7 @@ private struct HuntCard<Icon: View>: View {
                         .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
                         .foregroundStyle(.secondary)
                         .frame(width: 56, height: 56)
-                    Text("?").font(Galen.title(24)).foregroundStyle(.secondary)
+                    Text("?").font(AppStyle.title(24)).foregroundStyle(.secondary)
                 }
             }
             Text(name)

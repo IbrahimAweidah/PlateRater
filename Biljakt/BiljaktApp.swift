@@ -2,7 +2,7 @@ import GoogleSignIn
 import SwiftUI
 
 @main
-struct GalenApp: App {
+struct BiljaktApp: App {
     @State private var auth = AuthManager()
     @State private var showSplash = true
 
@@ -42,10 +42,10 @@ struct SplashView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Galen.pink, .orange], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [AppStyle.pink, .orange], startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
             VStack(spacing: 20) {
-                Image("GalenLogo")
+                Image("BiljaktLogo")
                     .resizable()
                     .frame(width: 180, height: 180)
                     .clipShape(RoundedRectangle(cornerRadius: 40))
@@ -53,11 +53,14 @@ struct SplashView: View {
                     .rotationEffect(.degrees(wobble ? 6 : -6))
                     .animation(.easeInOut(duration: 0.35).repeatForever(autoreverses: true), value: wobble)
                 Text("Biljakt")
-                    .font(Galen.title(64))
+                    .font(AppStyle.title(64))
                     .foregroundStyle(.white)
                 Text("Spana · Fota · Jaga bilar")
                     .font(.headline)
                     .foregroundStyle(.white.opacity(0.9))
+                Text("En produkt av Ibrax AB")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
                 Text("Version \(version)")
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.8))

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The Biljakt look: bright colors and rounded fonts. (The enum keeps its old name Galen.)
-enum Galen {
+/// The Biljakt look: bright colors and rounded fonts. (The enum keeps its old name AppStyle.)
+enum AppStyle {
     static let pink = Color(red: 1.0, green: 0.27, blue: 0.55)
     static let yellow = Color(red: 1.0, green: 0.82, blue: 0.1)
     static let blue = Color(red: 0.0, green: 0.32, blue: 0.65)
@@ -214,7 +214,7 @@ struct PlateBadge: View {
                 .font(.system(size: size * 0.5, weight: .bold))
                 .foregroundStyle(.white)
                 .frame(width: size * 0.9, height: size * 1.6)
-                .background(Galen.blue)
+                .background(AppStyle.blue)
             Text(plate)
                 .font(.system(size: size, weight: .bold, design: .monospaced))
                 .foregroundStyle(.black)

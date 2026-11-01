@@ -73,7 +73,7 @@ struct FriendsView: View {
                         Spacer()
                         Button("Ja!") { Task { await run { try await store.acceptFriend(request.id) } } }
                             .buttonStyle(.borderedProminent)
-                            .tint(Galen.pink)
+                            .tint(AppStyle.pink)
                         Button("Nej") { Task { await run { try await store.removeFriend(request.id) } } }
                             .buttonStyle(.bordered)
                     }
@@ -105,11 +105,11 @@ struct FriendsView: View {
                 Task { await sendRequest() }
             } label: {
                 Text("Utmana! 🏁")
-                    .font(Galen.title(18))
+                    .font(AppStyle.title(18))
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Galen.pink)
+            .tint(AppStyle.pink)
             .disabled(isBusy || !email.contains("@"))
             if let message {
                 Text(message).font(.caption).foregroundStyle(.secondary)
@@ -173,7 +173,7 @@ private struct PlayerRow: View {
                 HStack {
                     Text(player.name).font(.headline)
                     if player.isMe {
-                        Text("Du").font(.caption.bold()).foregroundStyle(Galen.pink)
+                        Text("Du").font(.caption.bold()).foregroundStyle(AppStyle.pink)
                     }
                 }
                 Text("🎨 \(player.foundColors.count)/\(CarColor.allCases.count) · 🚗 \(player.foundKinds.count)/\(CarKind.allCases.count) · 🏷️ \(player.foundBrands.count)/\(CarBrand.allCases.count)")
@@ -182,7 +182,7 @@ private struct PlayerRow: View {
             }
             Spacer()
             Text("\(player.points) p")
-                .font(Galen.title(20))
+                .font(AppStyle.title(20))
         }
         .padding(.vertical, 2)
     }

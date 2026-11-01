@@ -22,7 +22,7 @@ struct ContentView: View {
             FriendsView(auth: auth, store: store)
                 .tabItem { Label("Tävla", systemImage: "trophy.fill") }
         }
-        .tint(Galen.pink)
+        .tint(AppStyle.pink)
         .task { try? await store.loadMine() }
     }
 }
@@ -56,7 +56,7 @@ struct SpotView: View {
                         .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(width: 32, height: 64)
-                        .background(Galen.blue)
+                        .background(AppStyle.blue)
                     TextField("ABC123", text: $plateInput)
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
@@ -78,7 +78,7 @@ struct SpotView: View {
 
                 NavigationLink(value: PlateNumber.normalize(plateInput)) {
                     Text("Kör! 🏁")
-                        .font(Galen.title(20))
+                        .font(AppStyle.title(20))
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -141,6 +141,7 @@ struct SpotView: View {
                         Text(email)
                     }
                     Button("Logga ut", role: .destructive) { auth.signOut() }
+                    Text("Biljakt – en produkt av Ibrax AB")
                 } label: {
                     Image(systemName: "person.crop.circle")
                 }
