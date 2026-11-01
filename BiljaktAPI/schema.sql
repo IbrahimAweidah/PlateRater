@@ -1,5 +1,4 @@
 -- The whole Biljakt database, for a fresh, empty database.
--- (The production database was migrated with migrate-to-biljakt.sql instead.)
 -- Run in SmarterASP Control Panel > Databases > MSSQL > Web SQL Manager.
 CREATE TABLE dbo.BiljaktUsers (
     Id            INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_BiljaktUsers PRIMARY KEY,
