@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4E0000000000000000000015 /* PlateRaterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000011 /* PlateRaterApp.swift */; };
+		4E0000000000000000000015 /* GalenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000011 /* GalenApp.swift */; };
 		4E0000000000000000000017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000013 /* Assets.xcassets */; };
 		4E0000000000000000000018 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000014 /* Preview Assets.xcassets */; };
 		4E0000000000000000000019 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000012 /* ContentView.swift */; };
@@ -18,11 +18,16 @@
 		4E0000000000000000000023 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000022 /* AuthManager.swift */; };
 		4E0000000000000000000025 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000024 /* SignInView.swift */; };
 		4E0000000000000000000028 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 4E000000000000000000002A /* GoogleSignIn */; };
+		4E0000000000000000000040 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000041 /* Theme.swift */; };
+		4E0000000000000000000042 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000043 /* CameraPicker.swift */; };
+		4E0000000000000000000044 /* MyRatingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000045 /* MyRatingsView.swift */; };
+		4E0000000000000000000046 /* ColorHuntView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000047 /* ColorHuntView.swift */; };
+		4E0000000000000000000048 /* PlateScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0000000000000000000049 /* PlateScanner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4E0000000000000000000010 /* PlateRater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlateRater.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		4E0000000000000000000011 /* PlateRaterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlateRaterApp.swift; sourceTree = "<group>"; };
+		4E0000000000000000000010 /* Galen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Galen.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E0000000000000000000011 /* GalenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalenApp.swift; sourceTree = "<group>"; };
 		4E0000000000000000000012 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		4E0000000000000000000013 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4E0000000000000000000014 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -34,6 +39,11 @@
 		4E0000000000000000000024 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		4E0000000000000000000026 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4E0000000000000000000027 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		4E0000000000000000000041 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		4E0000000000000000000043 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
+		4E0000000000000000000045 /* MyRatingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyRatingsView.swift; sourceTree = "<group>"; };
+		4E0000000000000000000047 /* ColorHuntView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorHuntView.swift; sourceTree = "<group>"; };
+		4E0000000000000000000049 /* PlateScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlateScanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,7 +61,7 @@
 		4E0000000000000000000002 = {
 			isa = PBXGroup;
 			children = (
-				4E0000000000000000000004 /* PlateRater */,
+				4E0000000000000000000004 /* Galen */,
 				4E0000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,15 +69,15 @@
 		4E0000000000000000000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4E0000000000000000000010 /* PlateRater.app */,
+				4E0000000000000000000010 /* Galen.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		4E0000000000000000000004 /* PlateRater */ = {
+		4E0000000000000000000004 /* Galen */ = {
 			isa = PBXGroup;
 			children = (
-				4E0000000000000000000011 /* PlateRaterApp.swift */,
+				4E0000000000000000000011 /* GalenApp.swift */,
 				4E0000000000000000000012 /* ContentView.swift */,
 				4E000000000000000000001B /* Models.swift */,
 				4E000000000000000000001D /* RatingStore.swift */,
@@ -75,12 +85,17 @@
 				4E0000000000000000000024 /* SignInView.swift */,
 				4E0000000000000000000022 /* AuthManager.swift */,
 				4E0000000000000000000020 /* APIClient.swift */,
+				4E0000000000000000000041 /* Theme.swift */,
+				4E0000000000000000000043 /* CameraPicker.swift */,
+				4E0000000000000000000045 /* MyRatingsView.swift */,
+				4E0000000000000000000047 /* ColorHuntView.swift */,
+				4E0000000000000000000049 /* PlateScanner.swift */,
 				4E0000000000000000000027 /* Config.xcconfig */,
 				4E0000000000000000000026 /* Info.plist */,
 				4E0000000000000000000013 /* Assets.xcassets */,
 				4E0000000000000000000005 /* Preview Content */,
 			);
-			path = PlateRater;
+			path = Galen;
 			sourceTree = "<group>";
 		};
 		4E0000000000000000000005 /* Preview Content */ = {
@@ -94,9 +109,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4E0000000000000000000006 /* PlateRater */ = {
+		4E0000000000000000000006 /* Galen */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4E000000000000000000000B /* Build configuration list for PBXNativeTarget "PlateRater" */;
+			buildConfigurationList = 4E000000000000000000000B /* Build configuration list for PBXNativeTarget "Galen" */;
 			buildPhases = (
 				4E0000000000000000000007 /* Sources */,
 				4E0000000000000000000009 /* Frameworks */,
@@ -106,12 +121,12 @@
 			);
 			dependencies = (
 			);
-			name = PlateRater;
+			name = Galen;
 			packageProductDependencies = (
 				4E000000000000000000002A /* GoogleSignIn */,
 			);
-			productName = PlateRater;
-			productReference = 4E0000000000000000000010 /* PlateRater.app */;
+			productName = Galen;
+			productReference = 4E0000000000000000000010 /* Galen.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -129,7 +144,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 4E000000000000000000000A /* Build configuration list for PBXProject "PlateRater" */;
+			buildConfigurationList = 4E000000000000000000000A /* Build configuration list for PBXProject "Galen" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -145,7 +160,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4E0000000000000000000006 /* PlateRater */,
+				4E0000000000000000000006 /* Galen */,
 			);
 		};
 /* End PBXProject section */
@@ -167,7 +182,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4E0000000000000000000015 /* PlateRaterApp.swift in Sources */,
+				4E0000000000000000000015 /* GalenApp.swift in Sources */,
 				4E0000000000000000000019 /* ContentView.swift in Sources */,
 				4E000000000000000000001A /* Models.swift in Sources */,
 				4E000000000000000000001C /* RatingStore.swift in Sources */,
@@ -175,6 +190,11 @@
 				4E0000000000000000000025 /* SignInView.swift in Sources */,
 				4E0000000000000000000023 /* AuthManager.swift in Sources */,
 				4E0000000000000000000021 /* APIClient.swift in Sources */,
+				4E0000000000000000000040 /* Theme.swift in Sources */,
+				4E0000000000000000000042 /* CameraPicker.swift in Sources */,
+				4E0000000000000000000044 /* MyRatingsView.swift in Sources */,
+				4E0000000000000000000046 /* ColorHuntView.swift in Sources */,
+				4E0000000000000000000048 /* PlateScanner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -238,11 +258,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"PlateRater/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Galen/Preview Content\"";
 				DEVELOPMENT_TEAM = 4T5RSJWR7W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = PlateRater/Info.plist;
+				INFOPLIST_FILE = Galen/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Galen;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Galen använder kameran så att du kan fota bilar du betygsätter.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Galen sparar dina bilfoton i Bilder när du ber om det.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -252,7 +275,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ibrahimaweidah.PlateRater;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -268,11 +291,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"PlateRater/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Galen/Preview Content\"";
 				DEVELOPMENT_TEAM = 4T5RSJWR7W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = PlateRater/Info.plist;
+				INFOPLIST_FILE = Galen/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Galen;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Galen använder kameran så att du kan fota bilar du betygsätter.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Galen sparar dina bilfoton i Bilder när du ber om det.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -282,7 +308,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ibrahimaweidah.PlateRater;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -312,7 +338,7 @@
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCConfigurationList section */
-		4E000000000000000000000A /* Build configuration list for PBXProject "PlateRater" */ = {
+		4E000000000000000000000A /* Build configuration list for PBXProject "Galen" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4E000000000000000000000C /* Debug */,
@@ -321,7 +347,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4E000000000000000000000B /* Build configuration list for PBXNativeTarget "PlateRater" */ = {
+		4E000000000000000000000B /* Build configuration list for PBXNativeTarget "Galen" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4E000000000000000000000E /* Debug */,

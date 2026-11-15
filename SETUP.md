@@ -35,11 +35,11 @@ The app now signs in with Google and stores ratings on your server. There are fo
 
 ## 4. Point the app at Google and the API
 
-1. Open `PlateRater/Config.xcconfig` and fill in:
+1. Open `Galen/Config.xcconfig` and fill in:
    - `GOOGLE_CLIENT_ID`: the Client ID from step 1.
    - `GOOGLE_REVERSED_CLIENT_ID`: the iOS URL scheme from step 1.
    - `API_BASE_URL`: your API address. Keep the `https:/$()/` part exactly as written, because xcconfig treats `//` as the start of a comment.
-2. Open `PlateRater.xcodeproj`. Xcode downloads the GoogleSignIn package the first time.
+2. Open `Galen.xcodeproj`. Xcode downloads the GoogleSignIn package the first time.
 3. Run the app. It shows a Google sign-in screen first. After you sign in, ratings load from and save to the server.
 
 ## How it works
@@ -50,3 +50,18 @@ The app now signs in with Google and stores ratings on your server. There are fo
 - Other people's ratings show only a score, a comment, and a date. Names and emails are never sent to the app.
 
 Your original app files are backed up in `_backup-before-backend/`.
+
+## Galen update (colors, photos, "Mina betyg")
+
+The app is now called **Galen**. Ratings have a car color and an optional photo, and there are new tabs for your own ratings and the color hunt. Do these in this order:
+
+1. **Database first.** In Web SQL Manager for `DB_A30625_ibrahimawe`, run `PlateRaterAPI/schema-2-galen.sql`. It adds a `Color` column to `PlateRaterRatings` and a new `PlateRaterPhotos` table. The API that is running now keeps working after this.
+2. **Then the API.** Rebuild and upload:
+   ```
+   cd ~/Developer/PlateRater/PlateRaterAPI
+   dotnet publish -c Release -o publish/upload
+   ```
+   Upload everything in `publish/upload` **except `appsettings.json`**, so the copy on the server with the real password stays as it is. Open the site afterwards; it should say **Galen API is running.**
+3. **Then the app.** Pull, open `Galen.xcodeproj`, build and run. You should see a pink Galen start screen with "Version 2.0".
+
+Photos are stored in the database (scaled down to about 200–400 KB each) and only the person who took a photo can see it.
