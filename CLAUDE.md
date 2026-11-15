@@ -57,7 +57,9 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
 
-- 2026-11-15 – Apple approved the Ibrax AB Apple Developer Program enrollment. Sign in with Apple is back on: `AuthManager.appleSignInEnabled = true` and `CODE_SIGN_ENTITLEMENTS = Biljakt/Biljakt.entitlements` restored. `DEVELOPMENT_TEAM` in the project is still the old personal team 4T5RSJWR7W; pick the Ibrax AB team in Xcode (Signing & Capabilities) before archiving for TestFlight.
+- 2026-11-15 – Xcode Cloud set up (workflow "Default"). Committed `Package.resolved` (Xcode Cloud refuses to build without it), the shared `Biljakt` scheme and the Xcode Cloud manifest. `DEVELOPMENT_TEAM` is now the Ibrax AB team YHVGJY8MP4 (Debug and Release). The app ran on the owner's iPhone from Xcode the same day.
+
+- 2026-11-15 – Apple approved the Ibrax AB Apple Developer Program enrollment. Sign in with Apple is back on: `AuthManager.appleSignInEnabled = true` and `CODE_SIGN_ENTITLEMENTS = Biljakt/Biljakt.entitlements` restored. 
 
 - 2026-11-01 – Added `ROADMAP.md` (launch checklist and money plan agreed with the owner). Ibrax AB applied for the Apple Developer Program (waiting for Apple).
 
