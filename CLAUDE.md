@@ -57,6 +57,8 @@ A Swedish-law review (not by a lawyer) is at https://claude.ai/artifact/SpgPu9NR
 
 Keep this list up to date: add a line here whenever you change the app, the API or the database, so the next session (on any device) knows the current state.
 
+- 2026-11-15 – Apple approved the Ibrax AB Apple Developer Program enrollment. Sign in with Apple is back on: `AuthManager.appleSignInEnabled = true` and `CODE_SIGN_ENTITLEMENTS = Biljakt/Biljakt.entitlements` restored. `DEVELOPMENT_TEAM` in the project is still the old personal team 4T5RSJWR7W; pick the Ibrax AB team in Xcode (Signing & Capabilities) before archiving for TestFlight.
+
 - 2026-11-01 – Added `ROADMAP.md` (launch checklist and money plan agreed with the owner). Ibrax AB applied for the Apple Developer Program (waiting for Apple).
 
 - 2026-11-01 – First Mac build of the Apple sign-in code: simulator build succeeded after a fix in `APIClient.signInWithApple` (String/NSNull dictionary). Device build failed because team 4T5RSJWR7W is a free personal team, which can't use Sign in with Apple. So it is switched off: `AuthManager.appleSignInEnabled = false` hides the button and `CODE_SIGN_ENTITLEMENTS` was removed (`Biljakt.entitlements` is kept). After joining the paid Apple Developer Program: add Sign in with Apple in Signing & Capabilities and set the flag to true. TestFlight also needs the paid program.

@@ -11,11 +11,9 @@ import UIKit
 @Observable
 @MainActor
 final class AuthManager {
-    /// Sign in with Apple needs the paid Apple Developer Program. With the free personal team the app can't
-    /// even be installed while the capability is on, so it is off for now. To turn it on: join the program,
-    /// add "Sign in with Apple" under Signing & Capabilities in Xcode (it uses Biljakt/Biljakt.entitlements),
-    /// and set this to true.
-    static let appleSignInEnabled = false
+    /// Sign in with Apple needs the paid Apple Developer Program (Ibrax AB team, approved 2026-11-15) and the
+    /// "Sign in with Apple" capability (Biljakt/Biljakt.entitlements). Set to false to hide the button again.
+    static let appleSignInEnabled = true
 
     private(set) var user: GIDGoogleUser?
     private(set) var apple: AppleSession?
